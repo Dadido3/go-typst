@@ -4,6 +4,7 @@ import (
 	"encoding"
 	"fmt"
 	"io"
+	"math"
 	"reflect"
 	"slices"
 	"strconv"
@@ -44,7 +45,9 @@ func (e *VariableEncoder) WriteIndentationCharacters() {
 
 func (e *VariableEncoder) marshal(v reflect.Value) error {
 	if !v.IsValid() {
-		return fmt.Errorf("invalid reflect.Value %v", v)
+		e.WriteString("none")
+		return nil
+		//return fmt.Errorf("invalid reflect.Value %v", v)
 	}
 
 	t := v.Type()
@@ -89,14 +92,24 @@ func (e *VariableEncoder) marshal(v reflect.Value) error {
 		e.WriteString(strconv.FormatInt(v.Int(), 10))
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
 		e.WriteString(strconv.FormatUint(v.Uint(), 10))
-	case reflect.Float32:
-		e.WriteString(strconv.FormatFloat(v.Float(), 'e', -1, 32))
-	case reflect.Float64:
-		e.WriteString(strconv.FormatFloat(v.Float(), 'e', -1, 64))
+	case reflect.Float32, reflect.Float64:
+		f := v.Float()
+		switch {
+		case math.IsNaN(f):
+			e.WriteString("float.nan")
+		case math.IsInf(f, 1):
+			e.WriteString("float.inf")
+		case math.IsInf(f, -1):
+			e.WriteString("-float.inf")
+		default:
+			e.WriteString(strconv.FormatFloat(f, 'e', -1, 64))
+		}
 	case reflect.String:
 		return e.encodeString(v)
 	case reflect.Interface, reflect.Pointer:
 		return e.marshal(v.Elem())
+	case reflect.Map:
+		return e.encodeMap(v)
 	case reflect.Struct:
 		return e.encodeStruct(v, t)
 	case reflect.Slice:
@@ -141,6 +154,11 @@ func (e *VariableEncoder) encodeString(v reflect.Value) error {
 }
 
 func (e *VariableEncoder) encodeStruct(v reflect.Value, t reflect.Type) error {
+	if v.NumField() == 0 {
+		e.WriteString("()")
+		return nil
+	}
+
 	e.WriteString("(\n")
 
 	e.indentLevel++
@@ -187,6 +205,11 @@ func (e *VariableEncoder) resolveKeyName(v reflect.Value) (string, error) {
 }
 
 func (e *VariableEncoder) encodeMap(v reflect.Value) error {
+	if v.Len() == 0 {
+		e.WriteString("()")
+		return nil
+	}
+
 	e.WriteString("(\n")
 
 	e.indentLevel++

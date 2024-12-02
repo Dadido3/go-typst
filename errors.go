@@ -8,7 +8,7 @@ import (
 
 var stderrRegex = regexp.MustCompile(`^error: (?<error>.+)\n  ┌─ (?<path>.+):(?<line>\d+):(?<column>\d+)\n`)
 
-// Error represents a typst error.
+// Error represents a generic typst error.
 type Error struct {
 	Inner error
 

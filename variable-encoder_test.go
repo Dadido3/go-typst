@@ -39,10 +39,15 @@ func TestVariableEncoder(t *testing.T) {
 			Foo string
 			Bar int
 		}{"Hey!", 12345}, false, "(\n  Foo: \"Hey!\",\n  Bar: 12345,\n)"},
+		{"struct empty", struct{}{}, false, "()"},
+		{"struct empty pointer", (*struct{})(nil), false, "none"},
 		{"map string string", map[string]string{"Foo": "Bar", "Foo2": "Electric Foogaloo"}, false, "(\n  Foo: \"Bar\",\n  Foo2: \"Electric Foogaloo\",\n)"},
+		{"map string string empty", map[string]string{}, false, "()"},
 		{"map string string nil", map[string]string(nil), false, "()"},
 		{"string array", [5]string{"Foo", "Bar"}, false, `("Foo", "Bar", "", "", "")`},
 		{"string slice", []string{"Foo", "Bar"}, false, `("Foo", "Bar")`},
+		{"string slice empty", []string{}, false, `()`},
+		{"string slice nil", []string(nil), false, `()`},
 		{"string slice pointer", &[]string{"Foo", "Bar"}, false, `("Foo", "Bar")`},
 	}
 	for _, tt := range tests {
