@@ -1,7 +1,6 @@
 package typst
 
 import (
-	"log"
 	"regexp"
 	"strconv"
 )
@@ -43,8 +42,6 @@ func NewError(stderr string, inner error) *Error {
 		column, _ := strconv.ParseInt(parsed[i], 10, 0)
 		err.Column = int(column)
 	}
-
-	log.Printf("%#v", err)
 
 	return &err
 }
