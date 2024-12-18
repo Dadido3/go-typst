@@ -10,13 +10,14 @@ jobs:
     strategy:
       matrix:
         go-version: ['1.23.x']
+        typst-version: ['0.12.0']
 
     steps:
-      - name: Install typst-cli from crates.io
+      - name: Install typst-cli ${{ matrix.typst-version }} from crates.io
         uses: baptiste0928/cargo-install@v3
         with:
           crate: typst-cli
-          version: '0.12.0'
+          version: '${{ matrix.typst-version }}'
 
       - name: Set up Go ${{ matrix.go-version }}
         uses: actions/setup-go@v5

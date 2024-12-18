@@ -2,12 +2,24 @@
 
 A library to generate documents and reports by utilizing the command line version of [typst].
 
+This is basically a binding to typst-cli which exposes functions needed to compile documents into different formats like PDF, SVG or PNG. The goal is to make using typst as simple and "go like" as possible.
+
+This module, along with typst itself, is a work in progress.
+The API may change, and compatibility with different typst versions are also not set in stone.
+There is no way to prevent this as long as typst has breaking changes.
+To mitigate problems arising from this, most of the functionality is unit tested against different typst releases.
+The supported and tested versions right now are:
+
+- Typst 0.12.0
+
 ## Features
 
-- Encoder to convert go objects into typst objects which then can be injected into typst documents.
-- Parsing of stderr into an go error object.
+- PDF, SVG or PNG generation.
+- All typst-cli parameters are available as a struct, which makes it easy to discover all available options.
+- Encoder to convert go values into typst markup which can be injected into typst documents.
+- Any stderr will be returned as go error value, including line number, column and file path of the error.
 - Uses stdio; No temporary files need to be created.
-- Good test coverage of features.
+- Good unit test coverage.
 
 ## Installation
 

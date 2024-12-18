@@ -46,6 +46,8 @@ func (c CLI) VersionString() (string, error) {
 	return output.String(), nil
 }
 
+// TODO: Rename Render to Compile
+
 // Render takes a typst document from input, and renders it into the output writer.
 // The options parameter is optional.
 func (c CLI) Render(input io.Reader, output io.Writer, options *CLIOptions) error {
