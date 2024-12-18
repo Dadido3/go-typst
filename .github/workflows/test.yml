@@ -1,0 +1,30 @@
+name: test
+
+on: [push, pull_request]
+
+jobs:
+
+  build:
+    name: test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ['1.23.x']
+
+    steps:
+      - name: Install typst-cli from crates.io
+        uses: baptiste0928/cargo-install@v3
+        with:
+          crate: typst-cli
+          version: '0.12.0'
+
+      - name: Set up Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Test package
+        run: go test -v ./...
