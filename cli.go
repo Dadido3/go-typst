@@ -18,7 +18,33 @@ type CLI struct {
 	ExecutablePath string // The typst executable path can be overridden here. Otherwise the default path will be used.
 }
 
-// TODO: Method for querying typst version
+// TODO: Add method for querying the typst version resulting in a semver object
+
+// VersionString returns the version string as returned by typst.
+func (c CLI) VersionString() (string, error) {
+	// Get path of executable.
+	execPath := ExecutablePath
+	if c.ExecutablePath != "" {
+		execPath = c.ExecutablePath
+	}
+
+	cmd := exec.Command(execPath, "--version")
+
+	var output, errBuffer bytes.Buffer
+	cmd.Stdout = &output
+	cmd.Stderr = &errBuffer
+
+	if err := cmd.Run(); err != nil {
+		switch err := err.(type) {
+		case *exec.ExitError:
+			return "", ParseStderr(errBuffer.String(), err)
+		default:
+			return "", err
+		}
+	}
+
+	return output.String(), nil
+}
 
 // Render takes a typst document from input, and renders it into the output writer.
 // The options parameter is optional.

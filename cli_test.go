@@ -15,6 +15,15 @@ import (
 	"github.com/Dadido3/go-typst"
 )
 
+func TestCLI_VersionString(t *testing.T) {
+	cli := typst.CLI{}
+
+	_, err := cli.VersionString()
+	if err != nil {
+		t.Fatalf("Failed to get typst version: %v.", err)
+	}
+}
+
 // Test basic render functionality.
 func TestCLI_Render(t *testing.T) {
 	const inches = 1
