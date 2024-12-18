@@ -2,11 +2,51 @@ package typst
 
 import (
 	"bytes"
+	"fmt"
 	"math"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 )
+
+type VariableMarshalerType []byte
+
+func (v VariableMarshalerType) MarshalTypstVariable() ([]byte, error) {
+	return v, nil
+}
+
+type VariableMarshalerTypePointer []byte
+
+var variableMarshalerTypePointer = VariableMarshalerTypePointer("test")
+var variableMarshalerTypePointerNil = VariableMarshalerTypePointer(nil)
+
+func (v *VariableMarshalerTypePointer) MarshalTypstVariable() ([]byte, error) {
+	if v != nil {
+		return *v, nil
+	}
+
+	return nil, fmt.Errorf("no data")
+}
+
+type TextMarshalerType []byte
+
+func (v TextMarshalerType) MarshalText() ([]byte, error) {
+	return v, nil
+}
+
+type TextMarshalerTypePointer []byte
+
+var textMarshalerTypePointer = TextMarshalerTypePointer("test")
+var textMarshalerTypePointerNil = TextMarshalerTypePointer(nil)
+
+func (v *TextMarshalerTypePointer) MarshalText() ([]byte, error) {
+	if v != nil {
+		return *v, nil
+	}
+
+	return nil, fmt.Errorf("no data")
+}
 
 func TestVariableEncoder(t *testing.T) {
 
@@ -35,6 +75,7 @@ func TestVariableEncoder(t *testing.T) {
 		{"float64 +inf", float64(math.Inf(1)), false, "float.inf"},
 		{"float64 -inf", float64(math.Inf(-1)), false, "-float.inf"},
 		{"string", "Hey!", false, `"Hey!"`},
+		{"string escaped", "Hey!😀 \"This is quoted\"\nNew line!", false, `"Hey!😀 \"This is quoted\"\nNew line!"`},
 		{"struct", struct {
 			Foo string
 			Bar int
@@ -49,6 +90,24 @@ func TestVariableEncoder(t *testing.T) {
 		{"string slice empty", []string{}, false, `()`},
 		{"string slice nil", []string(nil), false, `()`},
 		{"string slice pointer", &[]string{"Foo", "Bar"}, false, `("Foo", "Bar")`},
+		{"int slice", []int{1, 2, 3, 4, 5}, false, `(1, 2, 3, 4, 5)`},
+		{"byte slice", []byte{1, 2, 3, 4, 5}, false, `bytes((1, 2, 3, 4, 5))`},
+		{"MarshalTypstVariable value", VariableMarshalerType("test"), false, "test"},
+		{"MarshalTypstVariable value nil", VariableMarshalerType(nil), false, ""},
+		{"MarshalTypstVariable pointer", &variableMarshalerTypePointer, false, "test"},
+		{"MarshalTypstVariable pointer nil", &variableMarshalerTypePointerNil, false, ""},
+		{"MarshalTypstVariable nil pointer", struct{ A *VariableMarshalerTypePointer }{nil}, true, ``},
+		{"MarshalText value", TextMarshalerType("test"), false, `"test"`},
+		{"MarshalText value nil", TextMarshalerType(nil), false, `""`},
+		{"MarshalText pointer", &textMarshalerTypePointer, false, `"test"`},
+		{"MarshalText pointer nil", &textMarshalerTypePointerNil, false, `""`},
+		{"MarshalText nil pointer", struct{ A *TextMarshalerTypePointer }{nil}, true, ``},
+		{"time.Time", time.Date(2024, 12, 14, 12, 34, 56, 0, time.UTC), false, `datetime(year: 2024, month: 12, day: 14, hour: 12, minute: 34, second: 56)`},
+		{"time.Time pointer", &[]time.Time{time.Date(2024, 12, 14, 12, 34, 56, 0, time.UTC)}[0], false, `datetime(year: 2024, month: 12, day: 14, hour: 12, minute: 34, second: 56)`},
+		{"time.Time pointer nil", (*time.Time)(nil), false, `none`},
+		{"time.Duration", 60 * time.Second, false, `duration(seconds: 60)`},
+		{"time.Duration pointer", &[]time.Duration{60 * time.Second}[0], false, `duration(seconds: 60)`},
+		{"time.Duration pointer nil", (*time.Duration)(nil), false, `none`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -64,8 +123,8 @@ func TestVariableEncoder(t *testing.T) {
 				t.Fatalf("Expected error, but got none")
 			}
 
-			if !cmp.Equal(result.String(), tt.want) {
-				t.Errorf("Got unexpected result: %s", cmp.Diff(result.String(), tt.want))
+			if !tt.wantErr && !cmp.Equal(result.String(), tt.want) {
+				t.Errorf("Got the following diff in output: %s", cmp.Diff(tt.want, result.String()))
 			}
 		})
 	}

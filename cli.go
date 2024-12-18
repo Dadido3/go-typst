@@ -2,16 +2,33 @@ package typst
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"os/exec"
 )
 
 type CLI struct {
-	//ExecutablePath string
+	ExecutablePath string // The typst executable path can be overridden here. Otherwise the default path will be used.
 }
 
-func (c CLI) Render(input io.Reader, output io.Writer) error {
-	cmd := exec.Command(ExecutablePath, "c", "-", "-")
+// TODO: Method for querying typst version
+
+// Render takes a typst document from input, and renders it into the output writer.
+// The options parameter is optional.
+func (c CLI) Render(input io.Reader, output io.Writer, options *CLIOptions) error {
+	args := []string{"c"}
+	if options != nil {
+		args = append(args, options.Args()...)
+	}
+	args = append(args, "--diagnostic-format", "short", "-", "-")
+
+	// Get path of executable.
+	execPath := ExecutablePath
+	if c.ExecutablePath != "" {
+		execPath = c.ExecutablePath
+	}
+
+	cmd := exec.Command(execPath, args...)
 	cmd.Stdin = input
 	cmd.Stdout = output
 
@@ -21,7 +38,7 @@ func (c CLI) Render(input io.Reader, output io.Writer) error {
 	if err := cmd.Run(); err != nil {
 		switch err := err.(type) {
 		case *exec.ExitError:
-			return NewError(errBuffer.String(), err)
+			return ParseStderr(errBuffer.String(), err)
 		default:
 			return err
 		}
@@ -30,8 +47,25 @@ func (c CLI) Render(input io.Reader, output io.Writer) error {
 	return nil
 }
 
-func (c CLI) RenderWithVariables(input io.Reader, output io.Writer, variables map[string]any) error {
-	reader := io.MultiReader(nil, input)
+// Render takes a typst document from input, and renders it into the output writer.
+// The options parameter is optional.
+//
+// Additionally this will inject the given map of variables into the global scope of the typst document.
+func (c CLI) RenderWithVariables(input io.Reader, output io.Writer, options *CLIOptions, variables map[string]any) error {
+	varBuffer := bytes.Buffer{}
 
-	return c.Render(reader, output)
+	// TODO: Use io.pipe instead of a bytes.Buffer
+
+	enc := NewVariableEncoder(&varBuffer)
+	for k, v := range variables {
+		varBuffer.WriteString("#let " + CleanIdentifier(k) + " = ")
+		if err := enc.Encode(v); err != nil {
+			return fmt.Errorf("failed to encode variables with key %q: %w", k, err)
+		}
+		varBuffer.WriteRune('\n')
+	}
+
+	reader := io.MultiReader(&varBuffer, input)
+
+	return c.Render(reader, output, options)
 }
