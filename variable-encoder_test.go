@@ -125,12 +125,16 @@ func TestVariableEncoder(t *testing.T) {
 		{"struct", struct {
 			Foo string
 			Bar int
-		}{"Hey!", 12345}, false, "(\n  Foo: \"Hey!\",\n  Bar: 12345,\n)"},
+		}{"Hey!", 12345}, false, "(\n  \"Foo\": \"Hey!\",\n  \"Bar\": 12345,\n)"},
 		{"struct empty", struct{}{}, false, "()"},
 		{"struct empty pointer", (*struct{})(nil), false, "none"},
-		{"map string string", map[string]string{"Foo": "Bar", "Foo2": "Electric Foogaloo"}, false, "(\n  Foo: \"Bar\",\n  Foo2: \"Electric Foogaloo\",\n)"},
+		{"map string string", map[string]string{"Foo": "Bar", "Foo2": "Electric Foogaloo"}, false, "(\n  \"Foo\": \"Bar\",\n  \"Foo2\": \"Electric Foogaloo\",\n)"},
 		{"map string string empty", map[string]string{}, false, "()"},
 		{"map string string nil", map[string]string(nil), false, "()"},
+		{"map string string key escape", map[string]string{"A\nNew": "Line"}, false, "(\n  \"A\\nNew\": \"Line\",\n)"},
+		{"map int string", map[int]string{1: "Foo", 2: "Bar"}, false, "(\n  \"1\": \"Foo\",\n  \"2\": \"Bar\",\n)"},
+		{"map int string negative keys", map[int]string{-1: "Foo", -2: "Bar"}, false, "(\n  \"-1\": \"Foo\",\n  \"-2\": \"Bar\",\n)"},
+		{"map uint string", map[uint]string{1: "Foo", 2: "Bar"}, false, "(\n  \"1\": \"Foo\",\n  \"2\": \"Bar\",\n)"},
 		{"string array", [5]string{"Foo", "Bar"}, false, `("Foo", "Bar", "", "", "")`},
 		{"string array 1", [1]string{"Foo"}, false, `("Foo",)`},
 		{"string slice", []string{"Foo", "Bar"}, false, `("Foo", "Bar")`},

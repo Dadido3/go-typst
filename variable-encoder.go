@@ -246,7 +246,10 @@ func (e *VariableEncoder) encodeStruct(v reflect.Value, t reflect.Type) error {
 				return err
 			}
 			// TODO: Allow name customization via struct tags
-			if err := e.writeString(CleanIdentifier(ft.Name) + ": "); err != nil {
+			if err := e.writeStringLiteral([]byte(ft.Name)); err != nil {
+				return err
+			}
+			if err := e.writeString(": "); err != nil {
 				return err
 			}
 			if err := e.marshal(fv); err != nil {
@@ -313,7 +316,7 @@ func (e *VariableEncoder) encodeMap(v reflect.Value) error {
 		if err != nil {
 			return err
 		}
-		pairs = append(pairs, pair{CleanIdentifier(key), mv})
+		pairs = append(pairs, pair{key, mv})
 	}
 
 	// Sort and then generate markup.
@@ -324,7 +327,10 @@ func (e *VariableEncoder) encodeMap(v reflect.Value) error {
 		if err := e.writeIndentationCharacters(); err != nil {
 			return err
 		}
-		if err := e.writeString(key + ": "); err != nil {
+		if err := e.writeStringLiteral([]byte(key)); err != nil {
+			return err
+		}
+		if err := e.writeString(": "); err != nil {
 			return err
 		}
 		if err := e.marshal(value); err != nil {
