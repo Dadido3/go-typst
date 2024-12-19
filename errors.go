@@ -19,10 +19,6 @@ type Error struct {
 }
 
 func (e *Error) Error() string {
-	if e.Message != "" {
-		return e.Message
-	}
-
 	return e.Raw
 }
 
@@ -50,8 +46,8 @@ func (e *ErrorWithPath) Unwrap() error {
 	return e.Inner
 }
 
-var stderrRegex = regexp.MustCompile(`^error: (?<error>.+)\n`)
-var stderrWithPathRegex = regexp.MustCompile(`^(?<path>.+):(?<line>\d+):(?<column>\d+): error: (?<error>.+)\n$`)
+var stderrRegex = regexp.MustCompile(`(?s)^error: (?<error>.+?)\n`)
+var stderrWithPathRegex = regexp.MustCompile(`(?s)^error: (?<error>.+?)\n\s+┌─ (?<path>.+?):(?<line>\d+):(?<column>\d+)\n`)
 
 // ParseStderr will parse the given stderr output and return a suitable error object.
 // Depending on the stderr message, this will return either a typst.Error or a typst.ErrorWithPath error.

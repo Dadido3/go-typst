@@ -55,7 +55,7 @@ func (c CLI) Render(input io.Reader, output io.Writer, options *CLIOptions) erro
 	if options != nil {
 		args = append(args, options.Args()...)
 	}
-	args = append(args, "--diagnostic-format", "short", "-", "-")
+	args = append(args, "--diagnostic-format", "human", "-", "-")
 
 	// Get path of executable.
 	execPath := ExecutablePath
