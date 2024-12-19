@@ -14,11 +14,11 @@ The supported and tested versions right now are:
 
 ## Features
 
-- PDF, SVG or PNG generation.
-- All typst-cli parameters are available as a struct, which makes it easy to discover all available options.
+- PDF, SVG and PNG generation.
+- All typst-cli parameters are [available as a struct](cli-options.go), which makes it easy to discover all available options.
 - Encoder to convert go values into typst markup which can be injected into typst documents.
 - Any stderr will be returned as go error value, including line number, column and file path of the error.
-- Uses stdio; No temporary files need to be created.
+- Uses stdio; No temporary files will be created.
 - Good unit test coverage.
 
 ## Installation

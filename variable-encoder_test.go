@@ -3,22 +3,27 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
-package typst
+package typst_test
 
 import (
 	"bytes"
 	"fmt"
 	"math"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/Dadido3/go-typst"
 	"github.com/google/go-cmp/cmp"
 )
 
 type VariableMarshalerType []byte
 
 func (v VariableMarshalerType) MarshalTypstVariable() ([]byte, error) {
-	return v, nil
+	result := append([]byte{'"'}, v...)
+	result = append(result, '"')
+
+	return result, nil
 }
 
 type VariableMarshalerTypePointer []byte
@@ -28,7 +33,10 @@ var variableMarshalerTypePointerNil = VariableMarshalerTypePointer(nil)
 
 func (v *VariableMarshalerTypePointer) MarshalTypstVariable() ([]byte, error) {
 	if v != nil {
-		return *v, nil
+		result := append([]byte{'"'}, *v...)
+		result = append(result, '"')
+
+		return result, nil
 	}
 
 	return nil, fmt.Errorf("no data")
@@ -64,11 +72,16 @@ func TestVariableEncoder(t *testing.T) {
 		{"nil", nil, false, "none"},
 		{"bool false", false, false, "false"},
 		{"bool true", true, false, "true"},
-		{"int", int(-123), false, "-123"},
-		{"int8", int8(-123), false, "-123"},
-		{"int16", int16(-123), false, "-123"},
-		{"int32", int32(-123), false, "-123"},
-		{"int64", int64(-123), false, "-123"},
+		{"int", int(123), false, "123"},
+		{"int8", int8(123), false, "123"},
+		{"int16", int16(123), false, "123"},
+		{"int32", int32(123), false, "123"},
+		{"int64", int64(123), false, "123"},
+		{"int negative", int(-123), false, "{-123}"},
+		{"int8 negative", int8(-123), false, "{-123}"},
+		{"int16 negative", int16(-123), false, "{-123}"},
+		{"int32 negative", int32(-123), false, "{-123}"},
+		{"int64 negative", int64(-123), false, "{-123}"},
 		{"uint", uint(123), false, "123"},
 		{"uint8", uint8(123), false, "123"},
 		{"uint16", uint16(123), false, "123"},
@@ -76,11 +89,13 @@ func TestVariableEncoder(t *testing.T) {
 		{"uint64", uint64(123), false, "123"},
 		{"float32", float32(1), false, "1e+00"},
 		{"float64", float64(1), false, "1e+00"},
+		{"float32 negative", float32(-1), false, "{-1e+00}"},
+		{"float64 negative", float64(-1), false, "{-1e+00}"},
 		{"float64 nan", float64(math.NaN()), false, "float.nan"},
 		{"float64 +inf", float64(math.Inf(1)), false, "float.inf"},
-		{"float64 -inf", float64(math.Inf(-1)), false, "-float.inf"},
+		{"float64 -inf", float64(math.Inf(-1)), false, "{-float.inf}"},
 		{"string", "Hey!", false, `"Hey!"`},
-		{"string escaped", "Hey!😀 \"This is quoted\"\nNew line!", false, `"Hey!😀 \"This is quoted\"\nNew line!"`},
+		{"string escaped", "Hey!😀 \"This is quoted\"\nNew line!\tAnd a tab", false, `"Hey!😀 \"This is quoted\"\nNew line!\tAnd a tab"`},
 		{"struct", struct {
 			Foo string
 			Bar int
@@ -91,16 +106,20 @@ func TestVariableEncoder(t *testing.T) {
 		{"map string string empty", map[string]string{}, false, "()"},
 		{"map string string nil", map[string]string(nil), false, "()"},
 		{"string array", [5]string{"Foo", "Bar"}, false, `("Foo", "Bar", "", "", "")`},
+		{"string array 1", [1]string{"Foo"}, false, `("Foo",)`},
 		{"string slice", []string{"Foo", "Bar"}, false, `("Foo", "Bar")`},
+		{"string slice 1", []string{"Foo"}, false, `("Foo",)`},
 		{"string slice empty", []string{}, false, `()`},
 		{"string slice nil", []string(nil), false, `()`},
 		{"string slice pointer", &[]string{"Foo", "Bar"}, false, `("Foo", "Bar")`},
 		{"int slice", []int{1, 2, 3, 4, 5}, false, `(1, 2, 3, 4, 5)`},
+		{"int slice negative", []int{1, -2, 3, -4, 5}, false, `(1, {-2}, 3, {-4}, 5)`},
 		{"byte slice", []byte{1, 2, 3, 4, 5}, false, `bytes((1, 2, 3, 4, 5))`},
-		{"MarshalTypstVariable value", VariableMarshalerType("test"), false, "test"},
-		{"MarshalTypstVariable value nil", VariableMarshalerType(nil), false, ""},
-		{"MarshalTypstVariable pointer", &variableMarshalerTypePointer, false, "test"},
-		{"MarshalTypstVariable pointer nil", &variableMarshalerTypePointerNil, false, ""},
+		{"byte slice 1", []byte{1}, false, `bytes((1,))`},
+		{"MarshalTypstVariable value", VariableMarshalerType("test"), false, `"test"`},
+		{"MarshalTypstVariable value nil", VariableMarshalerType(nil), false, `""`},
+		{"MarshalTypstVariable pointer", &variableMarshalerTypePointer, false, `"test"`},
+		{"MarshalTypstVariable pointer nil", &variableMarshalerTypePointerNil, false, `""`},
 		{"MarshalTypstVariable nil pointer", struct{ A *VariableMarshalerTypePointer }{nil}, true, ``},
 		{"MarshalText value", TextMarshalerType("test"), false, `"test"`},
 		{"MarshalText value nil", TextMarshalerType(nil), false, `""`},
@@ -113,12 +132,14 @@ func TestVariableEncoder(t *testing.T) {
 		{"time.Duration", 60 * time.Second, false, `duration(seconds: 60)`},
 		{"time.Duration pointer", &[]time.Duration{60 * time.Second}[0], false, `duration(seconds: 60)`},
 		{"time.Duration pointer nil", (*time.Duration)(nil), false, `none`},
+		{"time.Duration negative", -60 * time.Second, false, `duration(seconds: -60)`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-			result := bytes.Buffer{}
-			vEnc := NewVariableEncoder(&result)
+			var result bytes.Buffer
+			vEnc := typst.NewVariableEncoder(&result)
 
 			err := vEnc.Encode(tt.params)
 			switch {
@@ -130,6 +151,16 @@ func TestVariableEncoder(t *testing.T) {
 
 			if !tt.wantErr && !cmp.Equal(result.String(), tt.want) {
 				t.Errorf("Got the following diff in output: %s", cmp.Diff(tt.want, result.String()))
+			}
+
+			// Compile to test parsing.
+			if !tt.wantErr {
+				typstCLI := typst.CLI{}
+				input := strings.NewReader("#" + result.String())
+				var output bytes.Buffer
+				if err := typstCLI.Render(input, &output, nil); err != nil {
+					t.Errorf("Compilation failed: %v", err)
+				}
 			}
 		})
 	}

@@ -16,6 +16,8 @@ import (
 	"time"
 )
 
+// TODO: Add simple marshal function that returns a byte slice
+
 // VariableMarshaler can be implemented by types to support custom typst marshaling.
 type VariableMarshaler interface {
 	MarshalTypstVariable() ([]byte, error)
@@ -40,6 +42,10 @@ func (e *VariableEncoder) Encode(v any) error {
 
 func (e *VariableEncoder) writeString(s string) error {
 	return e.writeBytes([]byte(s))
+}
+
+func (e *VariableEncoder) writeRune(r rune) error {
+	return e.writeBytes([]byte{byte(r)})
 }
 
 func (e *VariableEncoder) writeStringLiteral(s []byte) error {
@@ -147,7 +153,19 @@ func (e *VariableEncoder) marshal(v reflect.Value) error {
 	case reflect.Bool:
 		err = e.writeString(strconv.FormatBool(v.Bool()))
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		err = e.writeString(strconv.FormatInt(v.Int(), 10))
+		if v.Int() >= 0 {
+			err = e.writeString(strconv.FormatInt(v.Int(), 10))
+		} else {
+			if err = e.writeRune('{'); err != nil {
+				break
+			}
+			if err = e.writeString(strconv.FormatInt(v.Int(), 10)); err != nil {
+				break
+			}
+			if err = e.writeRune('}'); err != nil {
+				break
+			}
+		}
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
 		err = e.writeString(strconv.FormatUint(v.Uint(), 10))
 	case reflect.Float32, reflect.Float64:
@@ -158,7 +176,17 @@ func (e *VariableEncoder) marshal(v reflect.Value) error {
 		case math.IsInf(f, 1):
 			err = e.writeString("float.inf")
 		case math.IsInf(f, -1):
-			err = e.writeString("-float.inf")
+			err = e.writeString("{-float.inf}")
+		case math.Signbit(f):
+			if err = e.writeRune('{'); err != nil {
+				break
+			}
+			if err = e.writeString(strconv.FormatFloat(f, 'e', -1, 64)); err != nil {
+				break
+			}
+			if err = e.writeRune('}'); err != nil {
+				break
+			}
 		default:
 			err = e.writeString(strconv.FormatFloat(f, 'e', -1, 64))
 		}
@@ -224,7 +252,7 @@ func (e *VariableEncoder) encodeStruct(v reflect.Value, t reflect.Type) error {
 		return err
 	}
 
-	return e.writeString(")")
+	return e.writeRune(')')
 }
 
 func (e *VariableEncoder) resolveKeyName(v reflect.Value) (string, error) {
@@ -290,7 +318,7 @@ func (e *VariableEncoder) encodeMap(v reflect.Value) error {
 		return err
 	}
 
-	return e.writeString(")")
+	return e.writeRune(')')
 }
 
 func (e *VariableEncoder) EncodeByteSlice(bb []byte) error {
@@ -312,6 +340,12 @@ func (e *VariableEncoder) EncodeByteSlice(bb []byte) error {
 		}
 	}
 
+	if len(bb) == 1 {
+		if err := e.writeRune(','); err != nil {
+			return err
+		}
+	}
+
 	return e.writeString("))")
 }
 
@@ -322,7 +356,7 @@ func (e *VariableEncoder) encodeSlice(v reflect.Value, t reflect.Type) error {
 		return e.EncodeByteSlice(v.Bytes())
 	}
 
-	if err := e.writeString("("); err != nil {
+	if err := e.writeRune('('); err != nil {
 		return err
 	}
 
@@ -338,11 +372,17 @@ func (e *VariableEncoder) encodeSlice(v reflect.Value, t reflect.Type) error {
 		}
 	}
 
-	return e.writeString(")")
+	if n == 1 {
+		if err := e.writeRune(','); err != nil {
+			return err
+		}
+	}
+
+	return e.writeRune(')')
 }
 
 func (e *VariableEncoder) encodeArray(v reflect.Value) error {
-	if err := e.writeString("("); err != nil {
+	if err := e.writeRune('('); err != nil {
 		return err
 	}
 
@@ -358,7 +398,13 @@ func (e *VariableEncoder) encodeArray(v reflect.Value) error {
 		}
 	}
 
-	return e.writeString(")")
+	if n == 1 {
+		if err := e.writeRune(','); err != nil {
+			return err
+		}
+	}
+
+	return e.writeRune(')')
 }
 
 func (e *VariableEncoder) encodeTime(t time.Time) error {
