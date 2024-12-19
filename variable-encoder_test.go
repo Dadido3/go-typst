@@ -184,8 +184,8 @@ func TestVariableEncoder(t *testing.T) {
 				typstCLI := typst.CLI{}
 				input := strings.NewReader("#" + result.String())
 				var output bytes.Buffer
-				if err := typstCLI.Render(input, &output, nil); err != nil {
-					t.Errorf("Compilation failed: %v", err)
+				if err := typstCLI.Compile(input, &output, nil); err != nil {
+					t.Errorf("Failed to compile generated typst markup: %v", err)
 				}
 			}
 		})

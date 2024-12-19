@@ -39,7 +39,7 @@ func main() {
 	}
 	defer f.Close()
 
-	if err := typstCLI.RenderWithVariables(r, f, nil, map[string]any{"Data": TestData}); err != nil {
-		log.Panicf("Failed to render document: %v.", err)
+	if err := typstCLI.CompileWithVariables(r, f, nil, map[string]any{"Data": TestData}); err != nil {
+		log.Panicf("Failed to compile document: %v.", err)
 	}
 }

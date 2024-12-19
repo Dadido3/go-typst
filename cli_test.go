@@ -24,8 +24,8 @@ func TestCLI_VersionString(t *testing.T) {
 	}
 }
 
-// Test basic render functionality.
-func TestCLI_Render(t *testing.T) {
+// Test basic compile functionality.
+func TestCLI_Compile(t *testing.T) {
 	const inches = 1
 	const ppi = 144
 
@@ -42,8 +42,8 @@ func TestCLI_Render(t *testing.T) {
 	}
 
 	var w bytes.Buffer
-	if err := cli.Render(r, &w, &opts); err != nil {
-		t.Fatalf("Failed to render document: %v.", err)
+	if err := cli.Compile(r, &w, &opts); err != nil {
+		t.Fatalf("Failed to compile document: %v.", err)
 	}
 
 	imgConf, imgType, err := image.DecodeConfig(&w)

@@ -33,7 +33,7 @@ You can install it by following [the instructions in the typst repository].
 
 ## Usage
 
-Here we will create a simple PDF document by passing a reader with typst markup into `typstCLI.Render` and then let it write the resulting PDF data into a file:
+Here we will create a simple PDF document by passing a reader with typst markup into `typstCLI.Compile` and then let it write the resulting PDF data into a file:
 
 ```go
 func main() {
@@ -58,8 +58,8 @@ A library to generate documents and reports by utilizing the command line versio
     }
     defer f.Close()
 
-    if err := typstCLI.Render(r, f, nil); err != nil {
-        t.Fatalf("Failed to render document: %v.", err)
+    if err := typstCLI.Compile(r, f, nil); err != nil {
+        t.Fatalf("Failed to compile document: %v.", err)
     }
 }
 ```

@@ -19,8 +19,8 @@ func TestErrors0(t *testing.T) {
 	r := bytes.NewBufferString(`This is a test!`)
 
 	var w bytes.Buffer
-	if err := cli.Render(r, &w, nil); err != nil {
-		t.Fatalf("Failed to render document: %v", err)
+	if err := cli.Compile(r, &w, nil); err != nil {
+		t.Fatalf("Failed to compile document: %v", err)
 	}
 }
 
@@ -32,7 +32,7 @@ func TestErrors1(t *testing.T) {
 #assert(1 < 1, message: "Test")`)
 
 	var w bytes.Buffer
-	if err := cli.Render(r, &w, nil); err == nil {
+	if err := cli.Compile(r, &w, nil); err == nil {
 		t.Fatalf("Expected error, but got nil")
 	} else {
 		var errWithPath *typst.ErrorWithPath
@@ -65,7 +65,7 @@ func TestErrors2(t *testing.T) {
 	r := bytes.NewBufferString(`This is a test!`)
 
 	var w bytes.Buffer
-	if err := cli.Render(r, &w, &opts); err == nil {
+	if err := cli.Compile(r, &w, &opts); err == nil {
 		t.Fatalf("Expected error, but got nil")
 	} else {
 		var errTypst *typst.Error

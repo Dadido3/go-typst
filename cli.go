@@ -46,11 +46,9 @@ func (c CLI) VersionString() (string, error) {
 	return output.String(), nil
 }
 
-// TODO: Rename Render to Compile
-
-// Render takes a typst document from input, and renders it into the output writer.
+// Compile takes a typst document from input, and renders it into the output writer.
 // The options parameter is optional.
-func (c CLI) Render(input io.Reader, output io.Writer, options *CLIOptions) error {
+func (c CLI) Compile(input io.Reader, output io.Writer, options *CLIOptions) error {
 	args := []string{"c"}
 	if options != nil {
 		args = append(args, options.Args()...)
@@ -82,11 +80,11 @@ func (c CLI) Render(input io.Reader, output io.Writer, options *CLIOptions) erro
 	return nil
 }
 
-// Render takes a typst document from input, and renders it into the output writer.
+// Compile takes a typst document from input, and renders it into the output writer.
 // The options parameter is optional.
 //
 // Additionally this will inject the given map of variables into the global scope of the typst document.
-func (c CLI) RenderWithVariables(input io.Reader, output io.Writer, options *CLIOptions, variables map[string]any) error {
+func (c CLI) CompileWithVariables(input io.Reader, output io.Writer, options *CLIOptions, variables map[string]any) error {
 	varBuffer := bytes.Buffer{}
 
 	// TODO: Use io.pipe instead of a bytes.Buffer
@@ -102,5 +100,5 @@ func (c CLI) RenderWithVariables(input io.Reader, output io.Writer, options *CLI
 
 	reader := io.MultiReader(&varBuffer, input)
 
-	return c.Render(reader, output, options)
+	return c.Compile(reader, output, options)
 }

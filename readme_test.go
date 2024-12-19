@@ -30,7 +30,7 @@ A library to generate documents and reports by utilizing the command line versio
 	}
 	defer f.Close()
 
-	if err := typstCLI.Render(r, f, nil); err != nil {
-		t.Fatalf("Failed to render document: %v.", err)
+	if err := typstCLI.Compile(r, f, nil); err != nil {
+		t.Fatalf("Failed to compile document: %v.", err)
 	}
 }
