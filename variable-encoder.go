@@ -7,6 +7,7 @@ package typst
 
 import (
 	"bytes"
+	"cmp"
 	"encoding"
 	"fmt"
 	"io"
@@ -298,23 +299,35 @@ func (e *VariableEncoder) encodeMap(v reflect.Value) error {
 
 	e.indentLevel++
 
-	// BUG: Map output needs to be sorted, otherwise this will cause the test to fail randomly
+	type pair struct {
+		key   string
+		value reflect.Value
+	}
 
+	// Get all key value pairs as reflect.Value.
 	mi := v.MapRange()
+	pairs := make([]pair, 0, v.Len())
 	for mi.Next() {
 		mk, mv := mi.Key(), mi.Value()
 		key, err := e.resolveKeyName(mk)
 		if err != nil {
 			return err
 		}
+		pairs = append(pairs, pair{CleanIdentifier(key), mv})
+	}
+
+	// Sort and then generate markup.
+	slices.SortFunc(pairs, func(a, b pair) int { return cmp.Compare(a.key, b.key) })
+	for _, pair := range pairs {
+		key, value := pair.key, pair.value
 
 		if err := e.writeIndentationCharacters(); err != nil {
 			return err
 		}
-		if err := e.writeString(CleanIdentifier(key) + ": "); err != nil {
+		if err := e.writeString(key + ": "); err != nil {
 			return err
 		}
-		if err := e.marshal(mv); err != nil {
+		if err := e.marshal(value); err != nil {
 			return fmt.Errorf("failed to encode map field %q: %w", key, err)
 		}
 
