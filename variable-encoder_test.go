@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"fmt"
 	"math"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -16,6 +17,31 @@ import (
 	"github.com/Dadido3/go-typst"
 	"github.com/google/go-cmp/cmp"
 )
+
+func TestMarshalVariable(t *testing.T) {
+	tests := []struct {
+		name    string
+		arg     any
+		want    []byte
+		wantErr bool
+	}{
+		{"nil", nil, []byte(`none`), false},
+		{"string", "Hey\nThere!", []byte(`"Hey\nThere!"`), false},
+		{"int", -123, []byte(`{-123}`), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := typst.MarshalVariable(tt.arg)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("MarshalVariable() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("MarshalVariable() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
 
 type VariableMarshalerType []byte
 

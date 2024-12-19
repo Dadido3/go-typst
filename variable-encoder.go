@@ -6,6 +6,7 @@
 package typst
 
 import (
+	"bytes"
 	"encoding"
 	"fmt"
 	"io"
@@ -16,7 +17,17 @@ import (
 	"time"
 )
 
-// TODO: Add simple marshal function that returns a byte slice
+// MarshalVariable takes any go type and returns a typst markup representation as a byte slice.
+func MarshalVariable(v any) ([]byte, error) {
+	var buf bytes.Buffer
+
+	enc := NewVariableEncoder(&buf)
+	if err := enc.Encode(v); err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
 
 // VariableMarshaler can be implemented by types to support custom typst marshaling.
 type VariableMarshaler interface {
