@@ -142,6 +142,8 @@ func TestVariableEncoder(t *testing.T) {
 		{"int slice negative", []int{1, -2, 3, -4, 5}, false, `(1, {-2}, 3, {-4}, 5)`},
 		{"byte slice", []byte{1, 2, 3, 4, 5}, false, `bytes((1, 2, 3, 4, 5))`},
 		{"byte slice 1", []byte{1}, false, `bytes((1,))`},
+		{"byte slice empty", []byte{}, false, `bytes(())`},
+		{"byte slice nil", []byte(nil), false, `bytes(())`},
 		{"MarshalTypstVariable value", VariableMarshalerType("test"), false, `"test"`},
 		{"MarshalTypstVariable value nil", VariableMarshalerType(nil), false, `""`},
 		{"MarshalTypstVariable pointer", &variableMarshalerTypePointer, false, `"test"`},
