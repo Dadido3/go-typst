@@ -12,7 +12,7 @@ import (
 	"os/exec"
 )
 
-// TODO: Add docker support to CLI
+// TODO: Add docker support to CLI, by calling docker run instead
 
 type CLI struct {
 	ExecutablePath string // The typst executable path can be overridden here. Otherwise the default path will be used.
