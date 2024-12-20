@@ -126,6 +126,14 @@ func TestVariableEncoder(t *testing.T) {
 			Foo string
 			Bar int
 		}{"Hey!", 12345}, false, "(\n  \"Foo\": \"Hey!\",\n  \"Bar\": 12345,\n)"},
+		{"struct with tags", struct {
+			Foo string `typst:"foo"`
+			Bar int    `typst:"😀"`
+		}{"Hey!", 12345}, false, "(\n  \"foo\": \"Hey!\",\n  \"😀\": 12345,\n)"},
+		{"struct with tags omitting", struct {
+			Foo string `typst:"foo"`
+			Bar int    `typst:"-"`
+		}{"Hey!", 12345}, false, "(\n  \"foo\": \"Hey!\",\n)"},
 		{"struct empty", struct{}{}, false, "()"},
 		{"struct empty pointer", (*struct{})(nil), false, "none"},
 		{"map string string", map[string]string{"Foo": "Bar", "Foo2": "Electric Foogaloo"}, false, "(\n  \"Foo\": \"Bar\",\n  \"Foo2\": \"Electric Foogaloo\",\n)"},

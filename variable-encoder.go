@@ -242,11 +242,19 @@ func (e *VariableEncoder) encodeStruct(v reflect.Value, t reflect.Type) error {
 	for i := 0; i < t.NumField(); i++ {
 		ft, fv := t.Field(i), v.Field(i)
 		if ft.PkgPath == "" { // Ignore unexported fields.
+			fieldName := ft.Name
+			if name, ok := ft.Tag.Lookup("typst"); ok {
+				// Omit fields that have their name set to "-".
+				if name == "-" {
+					continue
+				}
+				fieldName = name
+			}
+
 			if err := e.writeIndentationCharacters(); err != nil {
 				return err
 			}
-			// TODO: Allow name customization via struct tags
-			if err := e.writeStringLiteral([]byte(ft.Name)); err != nil {
+			if err := e.writeStringLiteral([]byte(fieldName)); err != nil {
 				return err
 			}
 			if err := e.writeString(": "); err != nil {
