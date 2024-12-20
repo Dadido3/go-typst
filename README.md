@@ -31,6 +31,17 @@ The supported and tested versions right now are:
 You need to have [typst] installed on any machine that you want to run your go project on.
 You can install it by following [the instructions in the typst repository].
 
+Alternatively you can pack the typst executable with your application. In this case you have to set up the CLI object similar to this:
+
+```go
+typstCLI := typst.CLI{
+    ExecutablePath: "./typst",
+}
+```
+
+> [!NOTE]
+> Make sure to follow the typst license requirements when you pack and distribute the typst executable with your software.
+
 ## Usage
 
 Here we will create a simple PDF document by passing a reader with typst markup into `typstCLI.Compile` and then let it write the resulting PDF data into a file:
