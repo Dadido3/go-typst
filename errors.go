@@ -1,4 +1,4 @@
-// Copyright (c) 2024 David Vogel
+// Copyright (c) 2024-2025 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -8,14 +8,26 @@ package typst
 import (
 	"regexp"
 	"strconv"
+	"strings"
 )
 
-// Error represents a generic typst error.
+// ErrorDetails contains the details of a typst.Error.
+type ErrorDetails struct {
+	Message string // The parsed error message.
+	Path    string // Path of the typst file where the error is located in. Zero value means that there is no further information.
+	Line    int    // Line number of the error. Zero value means that there is no further information.
+	Column  int    // Column of the error. Zero value means that there is no further information.
+}
+
+// Error represents a typst error.
+// This can contain multiple sub-errors or sub-warnings.
 type Error struct {
 	Inner error
 
-	Raw     string // The raw output from stderr.
-	Message string // The parsed error message.
+	Raw string // The raw output from stderr.
+
+	// Raw output parsed into errors and warnings.
+	Details []ErrorDetails
 }
 
 func (e *Error) Error() string {
@@ -26,72 +38,43 @@ func (e *Error) Unwrap() error {
 	return e.Inner
 }
 
-// ErrorWithPath represents a typst error that also contains information about its origin (filepath, line and column).
-type ErrorWithPath struct {
-	Inner error
+var stderrRegex = regexp.MustCompile(`(?s)^(?<error>.+?)(?:(?:\n\s+┌─ (?<path>.+?):(?<line>\d+):(?<column>\d+)\n)|(?:$))`)
 
-	Raw     string // The raw error string as returned by the executable.
-	Message string // Error message from typst.
-
-	Path   string // Path of the typst file where the error is located in.
-	Line   int    // Line number of the error.
-	Column int    // Column of the error.
-}
-
-func (e *ErrorWithPath) Error() string {
-	return e.Raw
-}
-
-func (e *ErrorWithPath) Unwrap() error {
-	return e.Inner
-}
-
-var stderrRegex = regexp.MustCompile(`(?s)^error: (?<error>.+?)\n`)
-var stderrWithPathRegex = regexp.MustCompile(`(?s)^error: (?<error>.+?)\n\s+┌─ (?<path>.+?):(?<line>\d+):(?<column>\d+)\n`)
-
-// ParseStderr will parse the given stderr output and return a suitable error object.
-// Depending on the stderr message, this will return either a typst.Error or a typst.ErrorWithPath error.
+// ParseStderr will parse the given stderr output and return a typst.Error.
 func ParseStderr(stderr string, inner error) error {
-	if parsed := stderrWithPathRegex.FindStringSubmatch(stderr); parsed != nil {
-		err := ErrorWithPath{
-			Raw:   stderr,
-			Inner: inner,
-		}
-
-		if i := stderrWithPathRegex.SubexpIndex("error"); i > 0 && i < len(parsed) {
-			err.Message = parsed[i]
-		}
-		if i := stderrWithPathRegex.SubexpIndex("path"); i > 0 && i < len(parsed) {
-			err.Path = parsed[i]
-		}
-		if i := stderrWithPathRegex.SubexpIndex("line"); i > 0 && i < len(parsed) {
-			line, _ := strconv.ParseInt(parsed[i], 10, 0)
-			err.Line = int(line)
-		}
-		if i := stderrWithPathRegex.SubexpIndex("column"); i > 0 && i < len(parsed) {
-			column, _ := strconv.ParseInt(parsed[i], 10, 0)
-			err.Column = int(column)
-		}
-
-		return &err
-	}
-
-	if parsed := stderrRegex.FindStringSubmatch(stderr); parsed != nil {
-		err := Error{
-			Raw:   stderr,
-			Inner: inner,
-		}
-
-		if i := stderrRegex.SubexpIndex("error"); i > 0 && i < len(parsed) {
-			err.Message = parsed[i]
-		}
-
-		return &err
-	}
-
-	// Fall back to the raw error message.
-	return &Error{
-		Raw:   stderr,
+	err := Error{
 		Inner: inner,
+		Raw:   stderr,
 	}
+
+	// Get all "blocks" ending with double new lines.
+	parts := strings.Split(stderr, "\n\n")
+	parts = parts[:len(parts)-1]
+
+	for _, part := range parts {
+		if parsed := stderrRegex.FindStringSubmatch(part); parsed != nil {
+			var details ErrorDetails
+
+			if i := stderrRegex.SubexpIndex("error"); i > 0 && i < len(parsed) && parsed[i] != "" {
+				details.Message = parsed[i]
+			}
+			if i := stderrRegex.SubexpIndex("path"); i > 0 && i < len(parsed) && parsed[i] != "" {
+				details.Path = parsed[i]
+			}
+			if i := stderrRegex.SubexpIndex("line"); i > 0 && i < len(parsed) && parsed[i] != "" {
+				if line, err := strconv.ParseInt(parsed[i], 10, 0); err == nil {
+					details.Line = int(line)
+				}
+			}
+			if i := stderrRegex.SubexpIndex("column"); i > 0 && i < len(parsed) && parsed[i] != "" {
+				if column, err := strconv.ParseInt(parsed[i], 10, 0); err == nil {
+					details.Column = int(column)
+				}
+			}
+
+			err.Details = append(err.Details, details)
+		}
+	}
+
+	return &err
 }
