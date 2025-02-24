@@ -16,9 +16,10 @@ type OutputFormat string
 const (
 	OutputFormatAuto OutputFormat = ""
 
-	OutputFormatPDF OutputFormat = "pdf"
-	OutputFormatPNG OutputFormat = "png"
-	OutputFormatSVG OutputFormat = "svg"
+	OutputFormatPDF  OutputFormat = "pdf"
+	OutputFormatPNG  OutputFormat = "png"
+	OutputFormatSVG  OutputFormat = "svg"
+	OutputFormatHTML OutputFormat = "html" // this format is only available since 0.13.0
 )
 
 type CLIOptions struct {
@@ -98,6 +99,12 @@ func (c *CLIOptions) Args() (result []string) {
 
 	if c.Format != OutputFormatAuto {
 		result = append(result, "-f", string(c.Format))
+		if c.Format == OutputFormatHTML {
+			// this is specific to version 0.13.0 where html
+			// is a feature than need explicit activation
+			// we must remove this when html becomes standard
+			result = append(result, "--features", "html")
+		}
 	}
 
 	if c.PPI > 0 {
