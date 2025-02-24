@@ -6,9 +6,12 @@ Its goal is to provide Go developers with a seamless, "Go-like" interface to Typ
 ## Stability and Compatibility
 
 `go-typst` is a work in progress, and the API may change as Typst evolves.
-Supported Typst versions are tested by unit tests to ensure compatibility:
+Supported Typst versions are tested by unit tests to ensure compatibility.
 
-- **Supported Version:** Typst 0.12.0
+**Supported Versions:**
+
+- Typst 0.12.0
+- Typst 0.13.0
 
 While breaking changes may occur, i aim to minimize disruptions.
 Use at your own discretion for production systems.
