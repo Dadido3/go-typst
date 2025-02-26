@@ -71,6 +71,7 @@ func (c *CLIOptions) Args() (result []string) {
 			}
 			paths += path
 		}
+		result = append(result, "--font-path", paths)
 	}
 
 	if c.IgnoreSystemFonts {
