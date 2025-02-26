@@ -116,5 +116,7 @@ func (c *CLIOptions) Args() (result []string) {
 		result = append(result, "--pdf-standard", c.PDFStandard)
 	}
 
+	result = append(result, c.Custom...)
+
 	return
 }
