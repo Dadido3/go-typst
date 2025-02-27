@@ -1,4 +1,4 @@
-// Copyright (c) 2024 David Vogel
+// Copyright (c) 2024-2025 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -18,7 +18,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func TestMarshalVariable(t *testing.T) {
+func TestMarshalValue(t *testing.T) {
 	tests := []struct {
 		name    string
 		arg     any
@@ -31,33 +31,33 @@ func TestMarshalVariable(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := typst.MarshalVariable(tt.arg)
+			got, err := typst.MarshalValue(tt.arg)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("MarshalVariable() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("MarshalValue() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("MarshalVariable() = %v, want %v", got, tt.want)
+				t.Errorf("MarshalValue() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-type VariableMarshalerType []byte
+type ValueMarshalerType []byte
 
-func (v VariableMarshalerType) MarshalTypstVariable() ([]byte, error) {
+func (v ValueMarshalerType) MarshalTypstValue() ([]byte, error) {
 	result := append([]byte{'"'}, v...)
 	result = append(result, '"')
 
 	return result, nil
 }
 
-type VariableMarshalerTypePointer []byte
+type ValueMarshalerTypePointer []byte
 
-var variableMarshalerTypePointer = VariableMarshalerTypePointer("test")
-var variableMarshalerTypePointerNil = VariableMarshalerTypePointer(nil)
+var valueMarshalerTypePointer = ValueMarshalerTypePointer("test")
+var valueMarshalerTypePointerNil = ValueMarshalerTypePointer(nil)
 
-func (v *VariableMarshalerTypePointer) MarshalTypstVariable() ([]byte, error) {
+func (v *ValueMarshalerTypePointer) MarshalTypstValue() ([]byte, error) {
 	if v != nil {
 		result := append([]byte{'"'}, *v...)
 		result = append(result, '"')
@@ -87,7 +87,7 @@ func (v *TextMarshalerTypePointer) MarshalText() ([]byte, error) {
 	return nil, fmt.Errorf("no data")
 }
 
-func TestVariableEncoder(t *testing.T) {
+func TestValueEncoder(t *testing.T) {
 
 	tests := []struct {
 		name    string
@@ -156,11 +156,11 @@ func TestVariableEncoder(t *testing.T) {
 		{"byte slice 1", []byte{1}, false, `bytes((1,))`},
 		{"byte slice empty", []byte{}, false, `bytes(())`},
 		{"byte slice nil", []byte(nil), false, `bytes(())`},
-		{"MarshalTypstVariable value", VariableMarshalerType("test"), false, `"test"`},
-		{"MarshalTypstVariable value nil", VariableMarshalerType(nil), false, `""`},
-		{"MarshalTypstVariable pointer", &variableMarshalerTypePointer, false, `"test"`},
-		{"MarshalTypstVariable pointer nil", &variableMarshalerTypePointerNil, false, `""`},
-		{"MarshalTypstVariable nil pointer", struct{ A *VariableMarshalerTypePointer }{nil}, true, ``},
+		{"MarshalTypstValue value", ValueMarshalerType("test"), false, `"test"`},
+		{"MarshalTypstValue value nil", ValueMarshalerType(nil), false, `""`},
+		{"MarshalTypstValue pointer", &valueMarshalerTypePointer, false, `"test"`},
+		{"MarshalTypstValue pointer nil", &valueMarshalerTypePointerNil, false, `""`},
+		{"MarshalTypstValue nil pointer", struct{ A *ValueMarshalerTypePointer }{nil}, true, ``},
 		{"MarshalText value", TextMarshalerType("test"), false, `"test"`},
 		{"MarshalText value nil", TextMarshalerType(nil), false, `""`},
 		{"MarshalText pointer", &textMarshalerTypePointer, false, `"test"`},
@@ -179,12 +179,12 @@ func TestVariableEncoder(t *testing.T) {
 			t.Parallel()
 
 			var result bytes.Buffer
-			vEnc := typst.NewVariableEncoder(&result)
+			vEnc := typst.NewValueEncoder(&result)
 
 			err := vEnc.Encode(tt.params)
 			switch {
 			case err != nil && !tt.wantErr:
-				t.Fatalf("Failed to encode typst variables: %v", err)
+				t.Fatalf("Failed to encode typst values: %v", err)
 			case err == nil && tt.wantErr:
 				t.Fatalf("Expected error, but got none")
 			}

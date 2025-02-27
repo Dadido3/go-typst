@@ -1,4 +1,4 @@
-// Copyright (c) 2024 David Vogel
+// Copyright (c) 2024-2025 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -18,11 +18,11 @@ import (
 	"time"
 )
 
-// MarshalVariable takes any go type and returns a typst markup representation as a byte slice.
-func MarshalVariable(v any) ([]byte, error) {
+// MarshalValue takes any go type and returns a typst markup representation as a byte slice.
+func MarshalValue(v any) ([]byte, error) {
 	var buf bytes.Buffer
 
-	enc := NewVariableEncoder(&buf)
+	enc := NewValueEncoder(&buf)
 	if err := enc.Encode(v); err != nil {
 		return nil, err
 	}
@@ -30,37 +30,37 @@ func MarshalVariable(v any) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-// VariableMarshaler can be implemented by types to support custom typst marshaling.
-type VariableMarshaler interface {
-	MarshalTypstVariable() ([]byte, error)
+// ValueMarshaler can be implemented by types to support custom Typst marshaling.
+type ValueMarshaler interface {
+	MarshalTypstValue() ([]byte, error)
 }
 
-type VariableEncoder struct {
+type ValueEncoder struct {
 	indentLevel int
 
 	writer io.Writer
 }
 
-// NewVariableEncoder returns a new encoder that writes into w.
-func NewVariableEncoder(w io.Writer) *VariableEncoder {
-	return &VariableEncoder{
+// NewValueEncoder returns a new encoder that writes into w.
+func NewValueEncoder(w io.Writer) *ValueEncoder {
+	return &ValueEncoder{
 		writer: w,
 	}
 }
 
-func (e *VariableEncoder) Encode(v any) error {
+func (e *ValueEncoder) Encode(v any) error {
 	return e.marshal(reflect.ValueOf(v))
 }
 
-func (e *VariableEncoder) writeString(s string) error {
+func (e *ValueEncoder) writeString(s string) error {
 	return e.writeBytes([]byte(s))
 }
 
-func (e *VariableEncoder) writeRune(r rune) error {
+func (e *ValueEncoder) writeRune(r rune) error {
 	return e.writeBytes([]byte{byte(r)})
 }
 
-func (e *VariableEncoder) writeStringLiteral(s []byte) error {
+func (e *ValueEncoder) writeStringLiteral(s []byte) error {
 	dst := make([]byte, 0, len(s)+5)
 
 	dst = append(dst, '"')
@@ -85,7 +85,7 @@ func (e *VariableEncoder) writeStringLiteral(s []byte) error {
 	return e.writeBytes(dst)
 }
 
-func (e *VariableEncoder) writeBytes(b []byte) error {
+func (e *ValueEncoder) writeBytes(b []byte) error {
 	if _, err := e.writer.Write(b); err != nil {
 		return fmt.Errorf("failed to write into writer: %w", err)
 	}
@@ -93,11 +93,11 @@ func (e *VariableEncoder) writeBytes(b []byte) error {
 	return nil
 }
 
-func (e *VariableEncoder) writeIndentationCharacters() error {
+func (e *ValueEncoder) writeIndentationCharacters() error {
 	return e.writeBytes(slices.Repeat([]byte{' ', ' '}, e.indentLevel))
 }
 
-func (e *VariableEncoder) marshal(v reflect.Value) error {
+func (e *ValueEncoder) marshal(v reflect.Value) error {
 	if !v.IsValid() {
 		return e.writeString("none")
 		//return fmt.Errorf("invalid reflect.Value %v", v)
@@ -134,8 +134,18 @@ func (e *VariableEncoder) marshal(v reflect.Value) error {
 		return nil
 	}
 
-	// TODO: Handle images, maybe create a wrapper type that does this
+	if t.Implements(reflect.TypeFor[ValueMarshaler]()) {
+		if m, ok := v.Interface().(ValueMarshaler); ok {
+			bytes, err := m.MarshalTypstValue()
+			if err != nil {
+				return fmt.Errorf("error calling MarshalTypstValue for type %s: %w", t.String(), err)
+			}
+			return e.writeBytes(bytes)
+		}
+		return e.writeString("none")
+	}
 
+	// TODO: Remove this in a future update, it's only here for compatibility reasons
 	if t.Implements(reflect.TypeFor[VariableMarshaler]()) {
 		if m, ok := v.Interface().(VariableMarshaler); ok {
 			bytes, err := m.MarshalTypstVariable()
@@ -222,11 +232,11 @@ func (e *VariableEncoder) marshal(v reflect.Value) error {
 	return err
 }
 
-func (e *VariableEncoder) encodeString(v reflect.Value) error {
+func (e *ValueEncoder) encodeString(v reflect.Value) error {
 	return e.writeStringLiteral([]byte(v.String()))
 }
 
-func (e *VariableEncoder) encodeStruct(v reflect.Value, t reflect.Type) error {
+func (e *ValueEncoder) encodeStruct(v reflect.Value, t reflect.Type) error {
 	if v.NumField() == 0 {
 		return e.writeString("()")
 	}
@@ -276,7 +286,7 @@ func (e *VariableEncoder) encodeStruct(v reflect.Value, t reflect.Type) error {
 	return e.writeRune(')')
 }
 
-func (e *VariableEncoder) resolveKeyName(v reflect.Value) (string, error) {
+func (e *ValueEncoder) resolveKeyName(v reflect.Value) (string, error) {
 	// From encoding/json/encode.go.
 	if v.Kind() == reflect.String {
 		return v.String(), nil
@@ -297,7 +307,7 @@ func (e *VariableEncoder) resolveKeyName(v reflect.Value) (string, error) {
 	return "", fmt.Errorf("unsupported map key type %q", v.Type().String())
 }
 
-func (e *VariableEncoder) encodeMap(v reflect.Value) error {
+func (e *ValueEncoder) encodeMap(v reflect.Value) error {
 	if v.Len() == 0 {
 		return e.writeString("()")
 	}
@@ -357,7 +367,7 @@ func (e *VariableEncoder) encodeMap(v reflect.Value) error {
 	return e.writeRune(')')
 }
 
-func (e *VariableEncoder) EncodeByteSlice(bb []byte) error {
+func (e *ValueEncoder) EncodeByteSlice(bb []byte) error {
 	if err := e.writeString("bytes(("); err != nil {
 		return err
 	}
@@ -385,7 +395,7 @@ func (e *VariableEncoder) EncodeByteSlice(bb []byte) error {
 	return e.writeString("))")
 }
 
-func (e *VariableEncoder) encodeSlice(v reflect.Value, t reflect.Type) error {
+func (e *ValueEncoder) encodeSlice(v reflect.Value, t reflect.Type) error {
 
 	// Special case for byte slices.
 	if t.Elem().Kind() == reflect.Uint8 {
@@ -417,7 +427,7 @@ func (e *VariableEncoder) encodeSlice(v reflect.Value, t reflect.Type) error {
 	return e.writeRune(')')
 }
 
-func (e *VariableEncoder) encodeArray(v reflect.Value) error {
+func (e *ValueEncoder) encodeArray(v reflect.Value) error {
 	if err := e.writeRune('('); err != nil {
 		return err
 	}
@@ -443,7 +453,7 @@ func (e *VariableEncoder) encodeArray(v reflect.Value) error {
 	return e.writeRune(')')
 }
 
-func (e *VariableEncoder) encodeTime(t time.Time) error {
+func (e *ValueEncoder) encodeTime(t time.Time) error {
 	return e.writeString(fmt.Sprintf("datetime(year: %d, month: %d, day: %d, hour: %d, minute: %d, second: %d)",
 		t.Year(),
 		t.Month(),
@@ -454,6 +464,6 @@ func (e *VariableEncoder) encodeTime(t time.Time) error {
 	))
 }
 
-func (e *VariableEncoder) encodeDuration(d time.Duration) error {
+func (e *ValueEncoder) encodeDuration(d time.Duration) error {
 	return e.writeString(fmt.Sprintf("duration(seconds: %d)", int(math.Round(d.Seconds()))))
 }

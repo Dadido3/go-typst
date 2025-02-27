@@ -15,10 +15,10 @@ import (
 
 // Image can be used to encode any image.Image into a typst image.
 //
-// For this, just wrap any image.Image with this type before passing it to MarshalVariable or a VariableEncoder.
+// For this, just wrap any image.Image with this type before passing it to MarshalValue or a ValueEncoder.
 type Image struct{ image.Image }
 
-func (i Image) MarshalTypstVariable() ([]byte, error) {
+func (i Image) MarshalTypstValue() ([]byte, error) {
 	var buffer bytes.Buffer
 
 	if err := png.Encode(&buffer, i); err != nil {

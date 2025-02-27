@@ -12,7 +12,7 @@ import (
 
 func main() {
 	// Convert a time.Time value into Typst markup.
-	date, err := typst.MarshalVariable(time.Now())
+	date, err := typst.MarshalValue(time.Now())
 	if err != nil {
 		log.Panicf("Failed to marshal date into Typst markup: %v", err)
 	}

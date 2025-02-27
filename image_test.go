@@ -48,7 +48,9 @@ func TestImage(t *testing.T) {
 
 	r.WriteString(`= Image test
 
-#TestImage`) // TODO: Add assertion for the image width and height as soon as it's possible to query that
+#TestImage
+
+#assert(type(TestImage) == content, message: "TestImage is not of expected type: got " + str(type(TestImage)) + ", want content")`) // TODO: Add another assertion for the image width and height as soon as it's possible to query that
 
 	if err := cli.Compile(&r, io.Discard, nil); err != nil {
 		t.Fatalf("Failed to compile document: %v.", err)
