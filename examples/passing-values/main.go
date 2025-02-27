@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"log"
 	"os"
 	"time"
@@ -8,7 +9,7 @@ import (
 	"github.com/Dadido3/go-typst"
 )
 
-// DataEntry contains fake data to be passed to typst.
+// DataEntry contains data to be passed to Typst.
 type DataEntry struct {
 	Name string
 	Size struct{ X, Y, Z float64 }
@@ -25,21 +26,28 @@ var TestData = []DataEntry{
 }
 
 func main() {
-	typstCLI := typst.CLI{}
+	var markup bytes.Buffer
 
-	r, err := os.Open("template.typ")
-	if err != nil {
-		log.Panicf("Failed to open template file for reading: %v.", err)
+	// Inject Go values as Typst markup.
+	if err := typst.InjectValues(&markup, map[string]any{"data": TestData, "customText": "This data is coming from a Go application."}); err != nil {
+		log.Panicf("Failed to inject values into Typst markup: %v.", err)
 	}
-	defer r.Close()
 
+	// Import the template and invoke the template function with the custom data.
+	// Show is used to replace the current document with whatever content the template function in `template.typ` returns.
+	markup.WriteString(`
+#import "template.typ": template
+#show: doc => template(data, customText)`)
+
+	// Compile the prepared markup with Typst and write the result it into `output.pdf`.
 	f, err := os.Create("output.pdf")
 	if err != nil {
 		log.Panicf("Failed to create output file: %v.", err)
 	}
 	defer f.Close()
 
-	if err := typstCLI.CompileWithVariables(r, f, nil, map[string]any{"Data": TestData}); err != nil {
+	typstCLI := typst.CLI{}
+	if err := typstCLI.Compile(&markup, f, nil); err != nil {
 		log.Panicf("Failed to compile document: %v.", err)
 	}
 }
