@@ -1,3 +1,8 @@
+// Copyright (c) 2024-2025 David Vogel
+//
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
+
 package typst
 
 import (
@@ -22,8 +27,10 @@ func (i Image) MarshalTypstVariable() ([]byte, error) {
 
 	// TODO: Make image encoding more efficient: Use reader/writer, baseXX encoding
 
+	// TODO: Consider using raw pixel encoding instead of PNG
+
 	var buf bytes.Buffer
-	buf.WriteString("image.decode(bytes((")
+	buf.WriteString("image.decode(bytes((") // TODO: Pass bytes directly to image once Typst 0.12.0 is not supported anymore
 	for _, b := range buffer.Bytes() {
 		buf.WriteString(strconv.FormatUint(uint64(b), 10) + ",")
 	}

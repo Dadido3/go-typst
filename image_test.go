@@ -33,18 +33,24 @@ func (p *testImage) Opaque() bool {
 }
 
 func TestImage(t *testing.T) {
-	img := &testImage{image.Rect(0, 0, 255, 255)}
+	img := &testImage{image.Rect(0, 0, 256, 256)}
 
 	// Wrap image.
 	typstImage := typst.Image{img}
 
 	cli := typst.CLI{}
 
-	r := bytes.NewBufferString(`= Image test
+	var r bytes.Buffer
 
-#TestImage`)
+	if err := typst.InjectValues(&r, map[string]any{"TestImage": typstImage}); err != nil {
+		t.Fatalf("Failed to inject values into Typst markup: %v.", err)
+	}
 
-	if err := cli.CompileWithVariables(r, io.Discard, nil, map[string]any{"TestImage": typstImage}); err != nil {
+	r.WriteString(`= Image test
+
+#TestImage`) // TODO: Add assertion for the image width and height as soon as it's possible to query that
+
+	if err := cli.Compile(&r, io.Discard, nil); err != nil {
 		t.Fatalf("Failed to compile document: %v.", err)
 	}
 }

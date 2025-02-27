@@ -1,4 +1,4 @@
-// Copyright (c) 2024 David Vogel
+// Copyright (c) 2024-2025 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -80,22 +80,17 @@ func (c CLI) Compile(input io.Reader, output io.Writer, options *CLIOptions) err
 	return nil
 }
 
-// Compile takes a typst document from input, and renders it into the output writer.
+// CompileWithVariables takes a typst document from input, and renders it into the output writer.
 // The options parameter is optional.
 //
 // Additionally this will inject the given map of variables into the global scope of the typst document.
+//
+// Deprecated: You should use InjectValues in combination with the normal Compile method instead.
 func (c CLI) CompileWithVariables(input io.Reader, output io.Writer, options *CLIOptions, variables map[string]any) error {
 	varBuffer := bytes.Buffer{}
 
-	// TODO: Use io.pipe instead of a bytes.Buffer
-
-	enc := NewVariableEncoder(&varBuffer)
-	for k, v := range variables {
-		varBuffer.WriteString("#let " + CleanIdentifier(k) + " = ")
-		if err := enc.Encode(v); err != nil {
-			return fmt.Errorf("failed to encode variables with key %q: %w", k, err)
-		}
-		varBuffer.WriteRune('\n')
+	if err := InjectValues(&varBuffer, variables); err != nil {
+		return fmt.Errorf("failed to inject values into Typst markup: %w", err)
 	}
 
 	reader := io.MultiReader(&varBuffer, input)
