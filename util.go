@@ -8,6 +8,8 @@ package typst
 import (
 	"fmt"
 	"io"
+	"maps"
+	"slices"
 )
 
 // InjectValues will write the given key-value pairs as Typst markup into output.
@@ -23,7 +25,10 @@ import (
 func InjectValues(output io.Writer, values map[string]any) error {
 	enc := NewVariableEncoder(output)
 
-	for k, v := range values {
+	// We will have to iterate over the sorted list of map keys.
+	// Otherwise the output is not deterministic, and tests will fail randomly.
+	for _, k := range slices.Sorted(maps.Keys(values)) {
+		v := values[k]
 		if !IsIdentifier(k) {
 			return fmt.Errorf("%q is not a valid identifier", k)
 		}

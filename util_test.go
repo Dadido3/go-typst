@@ -18,7 +18,7 @@ func TestInjectValues(t *testing.T) {
 	}{
 		{"empty", args{values: nil}, "", false},
 		{"nil", args{values: map[string]any{"foo": nil}}, "#let foo = none\n", false},
-		{"example", args{values: map[string]any{"foo": 1, "bar": 60 * time.Second}}, "#let foo = 1\n#let bar = duration(seconds: 60)\n", false},
+		{"example", args{values: map[string]any{"foo": 1, "bar": 60 * time.Second}}, "#let bar = duration(seconds: 60)\n#let foo = 1\n", false},
 		{"invalid identifier", args{values: map[string]any{"foo😀": 1}}, "", true},
 	}
 	for _, tt := range tests {
