@@ -184,7 +184,7 @@ func TestValueEncoder(t *testing.T) {
 			err := vEnc.Encode(tt.params)
 			switch {
 			case err != nil && !tt.wantErr:
-				t.Fatalf("Failed to encode typst values: %v", err)
+				t.Fatalf("Failed to encode Typst values: %v", err)
 			case err == nil && tt.wantErr:
 				t.Fatalf("Expected error, but got none")
 			}
@@ -199,7 +199,7 @@ func TestValueEncoder(t *testing.T) {
 				input := strings.NewReader("#" + result.String())
 				var output bytes.Buffer
 				if err := typstCLI.Compile(input, &output, nil); err != nil {
-					t.Errorf("Failed to compile generated typst markup: %v", err)
+					t.Errorf("Failed to compile generated Typst markup: %v", err)
 				}
 			}
 		})

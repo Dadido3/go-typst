@@ -18,7 +18,7 @@ import (
 	"time"
 )
 
-// MarshalValue takes any go type and returns a typst markup representation as a byte slice.
+// MarshalValue takes any Go type and returns a Typst markup representation as a byte slice.
 func MarshalValue(v any) ([]byte, error) {
 	var buf bytes.Buffer
 
@@ -372,7 +372,7 @@ func (e *ValueEncoder) EncodeByteSlice(bb []byte) error {
 		return err
 	}
 
-	// TODO: Encode byte slice via base64 or similar and use a typst package to convert it into the corresponding bytes type
+	// TODO: Encode byte slice via base64 or similar and use a Typst package to convert it into the corresponding bytes type
 
 	for i, b := range bb {
 		if i > 0 {

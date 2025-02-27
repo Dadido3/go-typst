@@ -13,7 +13,7 @@ import (
 	"strconv"
 )
 
-// Image can be used to encode any image.Image into a typst image.
+// Image can be used to encode any image.Image into a Typst image.
 //
 // For this, just wrap any image.Image with this type before passing it to MarshalValue or a ValueEncoder.
 type Image struct{ image.Image }

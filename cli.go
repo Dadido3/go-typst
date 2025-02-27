@@ -15,12 +15,12 @@ import (
 // TODO: Add docker support to CLI, by calling docker run instead
 
 type CLI struct {
-	ExecutablePath string // The typst executable path can be overridden here. Otherwise the default path will be used.
+	ExecutablePath string // The Typst executable path can be overridden here. Otherwise the default path will be used.
 }
 
-// TODO: Add method for querying the typst version resulting in a semver object
+// TODO: Add method for querying the Typst version resulting in a semver object
 
-// VersionString returns the version string as returned by typst.
+// VersionString returns the version string as returned by Typst.
 func (c CLI) VersionString() (string, error) {
 	// Get path of executable.
 	execPath := ExecutablePath
@@ -46,7 +46,7 @@ func (c CLI) VersionString() (string, error) {
 	return output.String(), nil
 }
 
-// Compile takes a typst document from input, and renders it into the output writer.
+// Compile takes a Typst document from input, and renders it into the output writer.
 // The options parameter is optional.
 func (c CLI) Compile(input io.Reader, output io.Writer, options *CLIOptions) error {
 	args := []string{"c"}
@@ -80,10 +80,10 @@ func (c CLI) Compile(input io.Reader, output io.Writer, options *CLIOptions) err
 	return nil
 }
 
-// CompileWithVariables takes a typst document from input, and renders it into the output writer.
+// CompileWithVariables takes a Typst document from input, and renders it into the output writer.
 // The options parameter is optional.
 //
-// Additionally this will inject the given map of variables into the global scope of the typst document.
+// Additionally this will inject the given map of variables into the global scope of the Typst document.
 //
 // Deprecated: You should use InjectValues in combination with the normal Compile method instead.
 func (c CLI) CompileWithVariables(input io.Reader, output io.Writer, options *CLIOptions, variables map[string]any) error {

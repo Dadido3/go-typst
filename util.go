@@ -13,7 +13,7 @@ import (
 )
 
 // InjectValues will write the given key-value pairs as Typst markup into output.
-// This can be used to inject Go values into typst documents.
+// This can be used to inject Go values into Typst documents.
 //
 // Every key in values needs to be a valid identifier, otherwise this function will return an error.
 // Every value in values will be marshaled according to ValueEncoder into equivalent Typst markup.

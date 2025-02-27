@@ -14,13 +14,13 @@ import (
 // ErrorDetails contains the details of a typst.Error.
 type ErrorDetails struct {
 	Message string // The parsed error message.
-	Path    string // Path of the typst file where the error is located in. Zero value means that there is no further information.
+	Path    string // Path of the Typst file where the error is located in. Zero value means that there is no further information.
 	Line    int    // Line number of the error. Zero value means that there is no further information.
 	Column  int    // Column of the error. Zero value means that there is no further information.
 }
 
-// Error represents a typst error.
-// This can contain multiple sub-errors or sub-warnings.
+// Error represents an error as returned by Typst.
+// This can contain multiple sub-errors or sub-warnings which are listed in the field Details.
 type Error struct {
 	Inner error
 
