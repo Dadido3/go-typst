@@ -113,8 +113,7 @@ func (e *VariableEncoder) marshal(v reflect.Value) error {
 		return nil
 	case *time.Time:
 		if i == nil {
-			e.writeString("none")
-			return nil
+			return e.writeString("none")
 		}
 		if err := e.encodeTime(*i); err != nil {
 			return err
@@ -127,8 +126,7 @@ func (e *VariableEncoder) marshal(v reflect.Value) error {
 		return nil
 	case *time.Duration:
 		if i == nil {
-			e.writeString("none")
-			return nil
+			return e.writeString("none")
 		}
 		if err := e.encodeDuration(*i); err != nil {
 			return err
