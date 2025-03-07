@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         go-version: ['1.23.x']
-        typst-version: ['0.12.0', '0.13.0']
+        typst-version: ['0.12.0', '0.13.0', '0.13.1']
 
     steps:
       - name: Install typst-cli ${{ matrix.typst-version }} from crates.io
