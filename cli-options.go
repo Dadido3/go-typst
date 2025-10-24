@@ -25,20 +25,37 @@ const (
 type PDFStandard string
 
 const (
-	PDFStandard1_7  PDFStandard = "1.7"  // PDF 1.7
+	PDFStandard1_4 PDFStandard = "1.4" // PDF 1.4 (Available since Typst 0.14.0)
+	PDFStandard1_5 PDFStandard = "1.5" // PDF 1.5 (Available since Typst 0.14.0)
+	PDFStandard1_6 PDFStandard = "1.6" // PDF 1.6 (Available since Typst 0.14.0)
+	PDFStandard1_7 PDFStandard = "1.7" // PDF 1.7
+	PDFStandard2_0 PDFStandard = "2.0" // PDF 2.0 (Available since Typst 0.14.0)
+
+	PDFStandardA_1B PDFStandard = "a-1b" // PDF/A-1b (Available since Typst 0.14.0)
+	PDFStandardA_1A PDFStandard = "a-1a" // PDF/A-1a (Available since Typst 0.14.0)
 	PDFStandardA_2B PDFStandard = "a-2b" // PDF/A-2b
-	PDFStandardA_3B PDFStandard = "a-3b" // PDF/A-3b (Available since Typst 0.13.0 and later)
+	PDFStandardA_2U PDFStandard = "a-2u" // PDF/A-2u (Available since Typst 0.14.0)
+	PDFStandardA_2A PDFStandard = "a-2a" // PDF/A-2a (Available since Typst 0.14.0)
+	PDFStandardA_3B PDFStandard = "a-3b" // PDF/A-3b (Available since Typst 0.13.0)
+	PDFStandardA_3U PDFStandard = "a-3u" // PDF/A-3u (Available since Typst 0.14.0)
+	PDFStandardA_3A PDFStandard = "a-3a" // PDF/A-3a (Available since Typst 0.14.0)
+	PDFStandardA_4  PDFStandard = "a-4"  // PDF/A-4 (Available since Typst 0.14.0)
+	PDFStandardA_4F PDFStandard = "a-4f" // PDF/A-4f (Available since Typst 0.14.0)
+	PDFStandardA_4E PDFStandard = "a-4e" // PDF/A-4e (Available since Typst 0.14.0)
+	PDFStandardUA_1 PDFStandard = "ua-1" // PDF/UA-1 (Available since Typst 0.14.0)
 )
 
 type CLIOptions struct {
-	Root              string            // Configures the project root (for absolute paths).
-	Input             map[string]string // String key-value pairs visible through `sys.inputs`.
-	FontPaths         []string          // Adds additional directories that are recursively searched for fonts.
-	IgnoreSystemFonts bool              // Ensures system fonts won't be searched, unless explicitly included via FontPaths.
-	CreationTime      time.Time         // The document's creation date. For more information, see https://reproducible-builds.org/specs/source-date-epoch/.
-	PackagePath       string            // Custom path to local packages, defaults to system-dependent location.
-	PackageCachePath  string            // Custom path to package cache, defaults to system-dependent location.
-	Jobs              int               // Number of parallel jobs spawned during compilation, defaults to number of CPUs. Setting it to 1 disables parallelism.
+	Root                string            // Configures the project root (for absolute paths).
+	Input               map[string]string // String key-value pairs visible through `sys.inputs`.
+	FontPaths           []string          // Adds additional directories that are recursively searched for fonts.
+	IgnoreSystemFonts   bool              // Ensures system fonts won't be searched, unless explicitly included via FontPaths.
+	IgnoreEmbeddedFonts bool              // Disables the use of fonts embedded into the Typst binary. (Available since Typst 0.14.0)
+	NoPDFTags           bool              // Disables the automatic generation of accessibility tags. These are emitted when no particular standard like PDF/UA-1 is selected to provide a baseline of accessibility. (Available since Typst 0.14.0)
+	CreationTime        time.Time         // The document's creation date. For more information, see https://reproducible-builds.org/specs/source-date-epoch/.
+	PackagePath         string            // Custom path to local packages, defaults to system-dependent location.
+	PackageCachePath    string            // Custom path to package cache, defaults to system-dependent location.
+	Jobs                int               // Number of parallel jobs spawned during compilation, defaults to number of CPUs. Setting it to 1 disables parallelism.
 
 	// Which pages to export. When unspecified, all document pages are exported.
 	//
@@ -81,6 +98,14 @@ func (c *CLIOptions) Args() (result []string) {
 
 	if c.IgnoreSystemFonts {
 		result = append(result, "--ignore-system-fonts")
+	}
+
+	if c.IgnoreEmbeddedFonts {
+		result = append(result, "--ignore-embedded-fonts")
+	}
+
+	if c.NoPDFTags {
+		result = append(result, "--no-pdf-tags")
 	}
 
 	if !c.CreationTime.IsZero() {
