@@ -30,6 +30,9 @@ func (c CLI) VersionString() (string, error) {
 	if c.ExecutablePath != "" {
 		execPath = c.ExecutablePath
 	}
+	if execPath == "" {
+		return "", fmt.Errorf("go-typst doesn't support this platform")
+	}
 
 	cmd := exec.Command(execPath, "--version")
 	cmd.Dir = c.WorkingDirectory // This doesn't do anything, but we will do it anyways for consistency.
@@ -63,6 +66,9 @@ func (c CLI) Compile(input io.Reader, output io.Writer, options *CLIOptions) err
 	execPath := ExecutablePath
 	if c.ExecutablePath != "" {
 		execPath = c.ExecutablePath
+	}
+	if execPath == "" {
+		return fmt.Errorf("go-typst doesn't support this platform")
 	}
 
 	cmd := exec.Command(execPath, args...)
