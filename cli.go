@@ -14,6 +14,8 @@ import (
 
 // TODO: Add docker support to CLI, by calling docker run instead
 
+// TODO: Add an interface for the Typst caller and let CLI (and later docker and WASM) be implementations of that
+
 type CLI struct {
 	ExecutablePath string // The Typst executable path can be overridden here. Otherwise the default path will be used.
 }
