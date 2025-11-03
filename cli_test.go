@@ -1,4 +1,4 @@
-// Copyright (c) 2024 David Vogel
+// Copyright (c) 2024-2025 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"image"
 	_ "image/png"
+	"path/filepath"
 	"strconv"
 	"testing"
 
@@ -58,5 +59,24 @@ func TestCLI_Compile(t *testing.T) {
 	}
 	if imgConf.Height != inches*ppi {
 		t.Fatalf("Resulting image height is %d, expected %d.", imgConf.Height, inches*ppi)
+	}
+}
+
+// Test basic compile functionality with a given working directory.
+func TestCLI_CompileWithWorkingDir(t *testing.T) {
+	cli := typst.CLI{
+		WorkingDirectory: filepath.Join(".", "test-files"),
+	}
+
+	r := bytes.NewBufferString(`#import "hello-world-template.typ": template
+#show: doc => template()`)
+
+	var w bytes.Buffer
+	err := cli.Compile(r, &w, nil)
+	if err != nil {
+		t.Fatalf("Failed to compile document: %v.", err)
+	}
+	if w.Available() == 0 {
+		t.Errorf("No output was written.")
 	}
 }

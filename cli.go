@@ -17,7 +17,8 @@ import (
 // TODO: Add an interface for the Typst caller and let CLI (and later docker and WASM) be implementations of that
 
 type CLI struct {
-	ExecutablePath string // The Typst executable path can be overridden here. Otherwise the default path will be used.
+	ExecutablePath   string // The Typst executable path can be overridden here. Otherwise the default path will be used.
+	WorkingDirectory string // The path where the Typst executable is run in. When left empty, the Typst executable will be run in the process's current directory.
 }
 
 // TODO: Add method for querying the Typst version resulting in a semver object
@@ -31,6 +32,7 @@ func (c CLI) VersionString() (string, error) {
 	}
 
 	cmd := exec.Command(execPath, "--version")
+	cmd.Dir = c.WorkingDirectory // This doesn't do anything, but we will do it anyways for consistency.
 
 	var output, errBuffer bytes.Buffer
 	cmd.Stdout = &output
@@ -64,6 +66,7 @@ func (c CLI) Compile(input io.Reader, output io.Writer, options *CLIOptions) err
 	}
 
 	cmd := exec.Command(execPath, args...)
+	cmd.Dir = c.WorkingDirectory
 	cmd.Stdin = input
 	cmd.Stdout = output
 
