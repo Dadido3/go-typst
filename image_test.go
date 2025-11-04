@@ -7,6 +7,7 @@ package typst_test
 
 import (
 	"bytes"
+	_ "embed"
 	"image"
 	"image/color"
 	"io"
@@ -42,6 +43,32 @@ func TestImage(t *testing.T) {
 
 	// Wrap image.
 	typstImage := typst.Image{img}
+
+	cli := typst.CLI{}
+
+	var r bytes.Buffer
+
+	if err := typst.InjectValues(&r, map[string]any{"TestImage": typstImage}); err != nil {
+		t.Fatalf("Failed to inject values into Typst markup: %v.", err)
+	}
+
+	r.WriteString(`= Image test
+
+#TestImage
+
+#assert(type(TestImage) == content, message: "TestImage is not of expected type: got " + str(type(TestImage)) + ", want content")`) // TODO: Add another assertion for the image width and height as soon as it's possible to query that
+
+	if err := cli.Compile(&r, io.Discard, nil); err != nil {
+		t.Fatalf("Failed to compile document: %v.", err)
+	}
+}
+
+//go:embed test-files/test.png
+var testPNG []byte
+
+func TestImageRaw(t *testing.T) {
+	// Wrap image.
+	typstImage := typst.ImageRaw(testPNG)
 
 	cli := typst.CLI{}
 
