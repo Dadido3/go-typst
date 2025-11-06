@@ -134,11 +134,11 @@ func TestValueEncoder(t *testing.T) {
 			Foo string `typst:"foo"`
 			Bar int    `typst:"-"`
 		}{"Hey!", 12345}, false, "(\n  \"foo\": \"Hey!\",\n)"},
-		{"struct empty", struct{}{}, false, "()"},
+		{"struct empty", struct{}{}, false, "(:)"},
 		{"struct empty pointer", (*struct{})(nil), false, "none"},
 		{"map string string", map[string]string{"Foo": "Bar", "Foo2": "Electric Foogaloo"}, false, "(\n  \"Foo\": \"Bar\",\n  \"Foo2\": \"Electric Foogaloo\",\n)"},
-		{"map string string empty", map[string]string{}, false, "()"},
-		{"map string string nil", map[string]string(nil), false, "()"},
+		{"map string string empty", map[string]string{}, false, "(:)"},
+		{"map string string nil", map[string]string(nil), false, "(:)"},
 		{"map string string key escape", map[string]string{"A\nNew": "Line"}, false, "(\n  \"A\\nNew\": \"Line\",\n)"},
 		{"map int string", map[int]string{1: "Foo", 2: "Bar"}, false, "(\n  \"1\": \"Foo\",\n  \"2\": \"Bar\",\n)"},
 		{"map int string negative keys", map[int]string{-1: "Foo", -2: "Bar"}, false, "(\n  \"-1\": \"Foo\",\n  \"-2\": \"Bar\",\n)"},

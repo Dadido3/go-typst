@@ -238,7 +238,7 @@ func (e *ValueEncoder) encodeString(v reflect.Value) error {
 
 func (e *ValueEncoder) encodeStruct(v reflect.Value, t reflect.Type) error {
 	if v.NumField() == 0 {
-		return e.writeString("()")
+		return e.writeString("(:)")
 	}
 
 	if err := e.writeString("(\n"); err != nil {
@@ -309,7 +309,7 @@ func (e *ValueEncoder) resolveKeyName(v reflect.Value) (string, error) {
 
 func (e *ValueEncoder) encodeMap(v reflect.Value) error {
 	if v.Len() == 0 {
-		return e.writeString("()")
+		return e.writeString("(:)")
 	}
 
 	if err := e.writeString("(\n"); err != nil {
