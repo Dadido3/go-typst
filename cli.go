@@ -28,7 +28,7 @@ func (c CLI) VersionString() (string, error) {
 		execPath = c.ExecutablePath
 	}
 	if execPath == "" {
-		return "", fmt.Errorf("go-typst doesn't support this platform")
+		return "", fmt.Errorf("not supported on this platform")
 	}
 
 	cmd := exec.Command(execPath, "--version")
@@ -65,7 +65,7 @@ func (c CLI) Compile(input io.Reader, output io.Writer, options *Options) error 
 		execPath = c.ExecutablePath
 	}
 	if execPath == "" {
-		return fmt.Errorf("go-typst doesn't support this platform")
+		return fmt.Errorf("not supported on this platform")
 	}
 
 	cmd := exec.Command(execPath, args...)
