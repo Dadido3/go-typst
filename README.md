@@ -21,7 +21,7 @@ Use at your own discretion for production systems.
 ## Features
 
 - PDF, SVG and PNG generation.
-- All Typst parameters are discoverable and documented in [cli-options.go](cli-options.go).
+- All Typst parameters are discoverable and documented in [options.go](options.go).
 - Go-to-Typst Value Encoder: Seamlessly inject any Go values.
 - Encode and inject images as a Typst markup simply by [wrapping](image.go) `image.Image` types or byte slices with raw JPEG or PNG data.
 - Errors from Typst CLI are returned as structured Go error objects with detailed information, such as line numbers and file paths.

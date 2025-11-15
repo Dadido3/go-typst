@@ -37,7 +37,7 @@ func TestCLI_Compile(t *testing.T) {
 
 #lorem(5)`)
 
-	opts := typst.CLIOptions{
+	opts := typst.Options{
 		Format: typst.OutputFormatPNG,
 		PPI:    ppi,
 	}

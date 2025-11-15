@@ -12,16 +12,13 @@ import (
 	"os/exec"
 )
 
-// TODO: Add docker support to CLI, by calling docker run instead
-
-// TODO: Add an interface for the Typst caller and let CLI (and later docker and WASM) be implementations of that
-
 type CLI struct {
 	ExecutablePath   string // The Typst executable path can be overridden here. Otherwise the default path will be used.
 	WorkingDirectory string // The path where the Typst executable is run in. When left empty, the Typst executable will be run in the process's current directory.
 }
 
-// TODO: Add method for querying the Typst version resulting in a semver object
+// Ensure that CLI implements the Caller interface.
+var _ Caller = CLI{}
 
 // VersionString returns the version string as returned by Typst.
 func (c CLI) VersionString() (string, error) {
@@ -55,7 +52,7 @@ func (c CLI) VersionString() (string, error) {
 
 // Compile takes a Typst document from input, and renders it into the output writer.
 // The options parameter is optional.
-func (c CLI) Compile(input io.Reader, output io.Writer, options *CLIOptions) error {
+func (c CLI) Compile(input io.Reader, output io.Writer, options *Options) error {
 	args := []string{"c"}
 	if options != nil {
 		args = append(args, options.Args()...)
@@ -96,8 +93,8 @@ func (c CLI) Compile(input io.Reader, output io.Writer, options *CLIOptions) err
 //
 // Additionally this will inject the given map of variables into the global scope of the Typst document.
 //
-// Deprecated: You should use InjectValues in combination with the normal Compile method instead.
-func (c CLI) CompileWithVariables(input io.Reader, output io.Writer, options *CLIOptions, variables map[string]any) error {
+// Deprecated: You should use typst.InjectValues in combination with the normal Compile method instead.
+func (c CLI) CompileWithVariables(input io.Reader, output io.Writer, options *Options, variables map[string]any) error {
 	varBuffer := bytes.Buffer{}
 
 	if err := InjectValues(&varBuffer, variables); err != nil {

@@ -12,8 +12,8 @@ import (
 	"github.com/Dadido3/go-typst"
 )
 
-func TestCliOptions(t *testing.T) {
-	o := typst.CLIOptions{
+func TestOptions(t *testing.T) {
+	o := typst.Options{
 		FontPaths: []string{"somepath/to/somewhere", "another/to/somewhere"},
 	}
 	args := o.Args()
