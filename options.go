@@ -45,7 +45,7 @@ const (
 	PDFStandardUA_1 PDFStandard = "ua-1" // PDF/UA-1 (Available since Typst 0.14.0)
 )
 
-// OptionsFonts contains all parameters for the fonts command.
+// OptionsFonts contains all supported parameters for the fonts command.
 type OptionsFonts struct {
 	FontPaths           []string // Adds additional directories that are recursively searched for fonts.
 	IgnoreSystemFonts   bool     // Ensures system fonts won't be searched, unless explicitly included via FontPaths.
@@ -85,7 +85,7 @@ func (o *OptionsFonts) Args() (result []string) {
 	return
 }
 
-// OptionsCompile contains all parameters for the compile command.
+// OptionsCompile contains all supported parameters for the compile command.
 type OptionsCompile struct {
 	Root                string            // Configures the project root (for absolute paths).
 	Input               map[string]string // String key-value pairs visible through `sys.inputs`.
@@ -117,18 +117,18 @@ type OptionsCompile struct {
 }
 
 // Args returns a list of CLI arguments that should be passed to the executable.
-func (c *OptionsCompile) Args() (result []string) {
-	if c.Root != "" {
-		result = append(result, "--root", c.Root)
+func (o *OptionsCompile) Args() (result []string) {
+	if o.Root != "" {
+		result = append(result, "--root", o.Root)
 	}
 
-	for key, value := range c.Input {
+	for key, value := range o.Input {
 		result = append(result, "--input", key+"="+value)
 	}
 
-	if len(c.FontPaths) > 0 {
+	if len(o.FontPaths) > 0 {
 		var paths string
-		for i, path := range c.FontPaths {
+		for i, path := range o.FontPaths {
 			if i > 0 {
 				paths += string(os.PathListSeparator)
 			}
@@ -137,41 +137,41 @@ func (c *OptionsCompile) Args() (result []string) {
 		result = append(result, "--font-path", paths)
 	}
 
-	if c.IgnoreSystemFonts {
+	if o.IgnoreSystemFonts {
 		result = append(result, "--ignore-system-fonts")
 	}
 
-	if c.IgnoreEmbeddedFonts {
+	if o.IgnoreEmbeddedFonts {
 		result = append(result, "--ignore-embedded-fonts")
 	}
 
-	if c.NoPDFTags {
+	if o.NoPDFTags {
 		result = append(result, "--no-pdf-tags")
 	}
 
-	if !c.CreationTime.IsZero() {
-		result = append(result, "--creation-timestamp", strconv.FormatInt(c.CreationTime.Unix(), 10))
+	if !o.CreationTime.IsZero() {
+		result = append(result, "--creation-timestamp", strconv.FormatInt(o.CreationTime.Unix(), 10))
 	}
 
-	if c.PackagePath != "" {
-		result = append(result, "--package-path", c.PackagePath)
+	if o.PackagePath != "" {
+		result = append(result, "--package-path", o.PackagePath)
 	}
 
-	if c.PackageCachePath != "" {
-		result = append(result, "--package-cache-path", c.PackageCachePath)
+	if o.PackageCachePath != "" {
+		result = append(result, "--package-cache-path", o.PackageCachePath)
 	}
 
-	if c.Jobs > 0 {
-		result = append(result, "-j", strconv.FormatInt(int64(c.Jobs), 10))
+	if o.Jobs > 0 {
+		result = append(result, "-j", strconv.FormatInt(int64(o.Jobs), 10))
 	}
 
-	if c.Pages != "" {
-		result = append(result, "--pages", c.Pages)
+	if o.Pages != "" {
+		result = append(result, "--pages", o.Pages)
 	}
 
-	if c.Format != OutputFormatAuto {
-		result = append(result, "-f", string(c.Format))
-		if c.Format == OutputFormatHTML {
+	if o.Format != OutputFormatAuto {
+		result = append(result, "-f", string(o.Format))
+		if o.Format == OutputFormatHTML {
 			// this is specific to version 0.13.0 where html
 			// is a feature than need explicit activation
 			// we must remove this when html becomes standard
@@ -179,13 +179,13 @@ func (c *OptionsCompile) Args() (result []string) {
 		}
 	}
 
-	if c.PPI > 0 {
-		result = append(result, "--ppi", strconv.FormatInt(int64(c.PPI), 10))
+	if o.PPI > 0 {
+		result = append(result, "--ppi", strconv.FormatInt(int64(o.PPI), 10))
 	}
 
-	if len(c.PDFStandards) > 0 {
+	if len(o.PDFStandards) > 0 {
 		var standards string
-		for i, standard := range c.PDFStandards {
+		for i, standard := range o.PDFStandards {
 			if i > 0 {
 				standards += ","
 			}
@@ -194,7 +194,7 @@ func (c *OptionsCompile) Args() (result []string) {
 		result = append(result, "--pdf-standard", standards)
 	}
 
-	result = append(result, c.Custom...)
+	result = append(result, o.Custom...)
 
 	return
 }
