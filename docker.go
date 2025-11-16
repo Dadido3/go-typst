@@ -38,7 +38,7 @@ type Docker struct {
 // Ensure that Docker implements the Caller interface.
 var _ Caller = Docker{}
 
-// VersionString returns the version string as returned by Typst.
+// VersionString returns the Typst version as a string.
 func (d Docker) VersionString() (string, error) {
 	image := DockerDefaultImage
 	if d.Image != "" {

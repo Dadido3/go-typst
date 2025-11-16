@@ -13,7 +13,7 @@ import "io"
 
 // Caller contains all Typst commands that are supported by this library.
 type Caller interface {
-	// VersionString returns the version string as returned by Typst.
+	// VersionString returns the Typst version as a string.
 	VersionString() (string, error)
 
 	// Fonts returns all fonts that are available to Typst.

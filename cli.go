@@ -22,7 +22,7 @@ type CLI struct {
 // Ensure that CLI implements the Caller interface.
 var _ Caller = CLI{}
 
-// VersionString returns the version string as returned by Typst.
+// VersionString returns the Typst version as a string.
 func (c CLI) VersionString() (string, error) {
 	// Get path of executable.
 	execPath := ExecutablePath
