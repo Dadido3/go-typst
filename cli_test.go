@@ -28,9 +28,9 @@ func TestCLI_VersionString(t *testing.T) {
 }
 
 func TestCLI_Fonts(t *testing.T) {
-	caller := typst.CLI{}
+	typstCaller := typst.CLI{}
 
-	result, err := caller.Fonts(nil)
+	result, err := typstCaller.Fonts(nil)
 	if err != nil {
 		t.Fatalf("Failed to get available fonts: %v.", err)
 	}
@@ -40,9 +40,9 @@ func TestCLI_Fonts(t *testing.T) {
 }
 
 func TestCLI_FontsWithOptions(t *testing.T) {
-	caller := typst.CLI{}
+	typstCaller := typst.CLI{}
 
-	result, err := caller.Fonts(&typst.OptionsFonts{IgnoreSystemFonts: true})
+	result, err := typstCaller.Fonts(&typst.OptionsFonts{IgnoreSystemFonts: true})
 	if err != nil {
 		t.Fatalf("Failed to get available fonts: %v.", err)
 	}
@@ -52,9 +52,9 @@ func TestCLI_FontsWithOptions(t *testing.T) {
 }
 
 func TestCLI_FontsWithFontPaths(t *testing.T) {
-	caller := typst.CLI{}
+	typstCaller := typst.CLI{}
 
-	result, err := caller.Fonts(&typst.OptionsFonts{IgnoreSystemFonts: true, FontPaths: []string{filepath.Join(".", "test-files")}})
+	result, err := typstCaller.Fonts(&typst.OptionsFonts{IgnoreSystemFonts: true, FontPaths: []string{filepath.Join(".", "test-files")}})
 	if err != nil {
 		t.Fatalf("Failed to get available fonts: %v.", err)
 	}

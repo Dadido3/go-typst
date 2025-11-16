@@ -30,8 +30,8 @@ This document was created at #%s.display() using typst-go.`, date)
 	}
 	defer f.Close()
 
-	typstCLI := typst.CLI{}
-	if err := typstCLI.Compile(&markup, f, nil); err != nil {
+	typstCaller := typst.CLI{}
+	if err := typstCaller.Compile(&markup, f, nil); err != nil {
 		log.Panic("failed to compile document: %w", err)
 	}
 }

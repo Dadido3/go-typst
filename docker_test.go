@@ -23,11 +23,11 @@ func typstDockerImage() string {
 }
 
 func TestDocker_VersionString(t *testing.T) {
-	caller := typst.Docker{
+	typstCaller := typst.Docker{
 		Image: typstDockerImage(),
 	}
 
-	v, err := caller.VersionString()
+	v, err := typstCaller.VersionString()
 	if err != nil {
 		t.Fatalf("Failed to get typst version: %v.", err)
 	}
@@ -36,11 +36,11 @@ func TestDocker_VersionString(t *testing.T) {
 }
 
 func TestDocker_Fonts(t *testing.T) {
-	caller := typst.Docker{
+	typstCaller := typst.Docker{
 		Image: typstDockerImage(),
 	}
 
-	result, err := caller.Fonts(nil)
+	result, err := typstCaller.Fonts(nil)
 	if err != nil {
 		t.Fatalf("Failed to get available fonts: %v.", err)
 	}
@@ -50,11 +50,11 @@ func TestDocker_Fonts(t *testing.T) {
 }
 
 func TestDocker_FontsWithOptions(t *testing.T) {
-	caller := typst.Docker{
+	typstCaller := typst.Docker{
 		Image: typstDockerImage(),
 	}
 
-	result, err := caller.Fonts(&typst.OptionsFonts{IgnoreSystemFonts: true})
+	result, err := typstCaller.Fonts(&typst.OptionsFonts{IgnoreSystemFonts: true})
 	if err != nil {
 		t.Fatalf("Failed to get available fonts: %v.", err)
 	}
@@ -64,12 +64,12 @@ func TestDocker_FontsWithOptions(t *testing.T) {
 }
 
 func TestDocker_FontsWithFontPaths(t *testing.T) {
-	caller := typst.Docker{
+	typstCaller := typst.Docker{
 		Image:   typstDockerImage(),
 		Volumes: []string{"./test-files:/fonts"},
 	}
 
-	result, err := caller.Fonts(&typst.OptionsFonts{IgnoreSystemFonts: true, FontPaths: []string{"/fonts"}})
+	result, err := typstCaller.Fonts(&typst.OptionsFonts{IgnoreSystemFonts: true, FontPaths: []string{"/fonts"}})
 	if err != nil {
 		t.Fatalf("Failed to get available fonts: %v.", err)
 	}
