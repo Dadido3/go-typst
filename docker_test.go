@@ -27,10 +27,12 @@ func TestDocker_VersionString(t *testing.T) {
 		Image: typstDockerImage(),
 	}
 
-	_, err := caller.VersionString()
+	v, err := caller.VersionString()
 	if err != nil {
 		t.Fatalf("Failed to get typst version: %v.", err)
 	}
+
+	t.Logf("VersionString: %s", v)
 }
 
 func TestDocker_Fonts(t *testing.T) {

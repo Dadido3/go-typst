@@ -19,10 +19,12 @@ import (
 func TestCLI_VersionString(t *testing.T) {
 	cli := typst.CLI{}
 
-	_, err := cli.VersionString()
+	v, err := cli.VersionString()
 	if err != nil {
 		t.Fatalf("Failed to get typst version: %v.", err)
 	}
+
+	t.Logf("VersionString: %s", v)
 }
 
 func TestCLI_Fonts(t *testing.T) {
