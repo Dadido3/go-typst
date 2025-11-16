@@ -27,12 +27,24 @@ func TestDocker_VersionString(t *testing.T) {
 func TestDocker_Fonts(t *testing.T) {
 	caller := typst.Docker{}
 
-	result, err := caller.Fonts()
+	result, err := caller.Fonts(nil)
 	if err != nil {
 		t.Fatalf("Failed to get available fonts: %v.", err)
 	}
 	if len(result) < 4 {
 		t.Errorf("Unexpected number of detected fonts. Got %d, want >= %d.", len(result), 4)
+	}
+}
+
+func TestDocker_FontsWithOptions(t *testing.T) {
+	caller := typst.Docker{}
+
+	result, err := caller.Fonts(&typst.OptionsFonts{IgnoreSystemFonts: true, IgnoreEmbeddedFonts: true})
+	if err != nil {
+		t.Fatalf("Failed to get available fonts: %v.", err)
+	}
+	if len(result) != 0 {
+		t.Errorf("Unexpected number of detected fonts. Got %d, want %d.", len(result), 0)
 	}
 }
 

@@ -28,12 +28,24 @@ func TestCLI_VersionString(t *testing.T) {
 func TestCLI_Fonts(t *testing.T) {
 	caller := typst.CLI{}
 
-	result, err := caller.Fonts()
+	result, err := caller.Fonts(nil)
 	if err != nil {
 		t.Fatalf("Failed to get available fonts: %v.", err)
 	}
 	if len(result) < 4 {
 		t.Errorf("Unexpected number of detected fonts. Got %d, want >= %d.", len(result), 4)
+	}
+}
+
+func TestCLI_FontsWithOptions(t *testing.T) {
+	caller := typst.CLI{}
+
+	result, err := caller.Fonts(&typst.OptionsFonts{IgnoreSystemFonts: true, IgnoreEmbeddedFonts: true})
+	if err != nil {
+		t.Fatalf("Failed to get available fonts: %v.", err)
+	}
+	if len(result) != 0 {
+		t.Errorf("Unexpected number of detected fonts. Got %d, want %d.", len(result), 0)
 	}
 }
 

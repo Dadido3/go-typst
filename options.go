@@ -45,6 +45,46 @@ const (
 	PDFStandardUA_1 PDFStandard = "ua-1" // PDF/UA-1 (Available since Typst 0.14.0)
 )
 
+// OptionsFonts contains all parameters for the fonts command.
+type OptionsFonts struct {
+	FontPaths           []string // Adds additional directories that are recursively searched for fonts.
+	IgnoreSystemFonts   bool     // Ensures system fonts won't be searched, unless explicitly included via FontPaths.
+	IgnoreEmbeddedFonts bool     // Disables the use of fonts embedded into the Typst binary. (Available since Typst 0.14.0)
+	Variants            bool     // Also lists style variants of each font family.
+
+	Custom []string // Custom command line options go here.
+}
+
+// Args returns a list of CLI arguments that should be passed to the executable.
+func (o *OptionsFonts) Args() (result []string) {
+	if len(o.FontPaths) > 0 {
+		var paths string
+		for i, path := range o.FontPaths {
+			if i > 0 {
+				paths += string(os.PathListSeparator)
+			}
+			paths += path
+		}
+		result = append(result, "--font-path", paths)
+	}
+
+	if o.IgnoreSystemFonts {
+		result = append(result, "--ignore-system-fonts")
+	}
+
+	if o.IgnoreEmbeddedFonts {
+		result = append(result, "--ignore-embedded-fonts")
+	}
+
+	if o.Variants {
+		result = append(result, "--variants")
+	}
+
+	result = append(result, o.Custom...)
+
+	return
+}
+
 // OptionsCompile contains all parameters for the compile command.
 type OptionsCompile struct {
 	Root                string            // Configures the project root (for absolute paths).

@@ -53,7 +53,8 @@ func (c CLI) VersionString() (string, error) {
 }
 
 // Fonts returns all fonts that are available to Typst.
-func (c CLI) Fonts() ([]string, error) {
+// The options parameter is optional, and can be nil.
+func (c CLI) Fonts(options *OptionsFonts) ([]string, error) {
 	// Get path of executable.
 	execPath := ExecutablePath
 	if c.ExecutablePath != "" {
@@ -63,7 +64,12 @@ func (c CLI) Fonts() ([]string, error) {
 		return nil, fmt.Errorf("not supported on this platform")
 	}
 
-	cmd := exec.Command(execPath, "fonts")
+	args := []string{"fonts"}
+	if options != nil {
+		args = append(args, options.Args()...)
+	}
+
+	cmd := exec.Command(execPath, args...)
 	cmd.Dir = c.WorkingDirectory
 
 	var output, errBuffer bytes.Buffer

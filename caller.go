@@ -17,7 +17,8 @@ type Caller interface {
 	VersionString() (string, error)
 
 	// Fonts returns all fonts that are available to Typst.
-	Fonts() ([]string, error)
+	// The options parameter is optional, and can be nil.
+	Fonts(options *OptionsFonts) ([]string, error)
 
 	// Compile takes a Typst document from the supplied input reader, and renders it into the output writer.
 	// The options parameter is optional, and can be nil.

@@ -64,13 +64,19 @@ func (d Docker) VersionString() (string, error) {
 }
 
 // Fonts returns all fonts that are available to Typst.
-func (d Docker) Fonts() ([]string, error) {
+// The options parameter is optional, and can be nil.
+func (d Docker) Fonts(options *OptionsFonts) ([]string, error) {
 	image := DockerDefaultImage
 	if d.Image != "" {
 		image = d.Image
 	}
 
-	cmd := exec.Command("docker", "run", "-i", image, "fonts")
+	args := []string{"run", "-i", image, "fonts"}
+	if options != nil {
+		args = append(args, options.Args()...)
+	}
+
+	cmd := exec.Command("docker", args...)
 
 	var output, errBuffer bytes.Buffer
 	cmd.Stdout = &output
