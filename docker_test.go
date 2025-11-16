@@ -8,6 +8,7 @@ package typst_test
 import (
 	"bytes"
 	"image"
+	"os"
 	"path/filepath"
 	"strconv"
 	"testing"
@@ -15,8 +16,16 @@ import (
 	"github.com/Dadido3/go-typst"
 )
 
+// Returns the TYPST_DOCKER_IMAGE environment variable.
+// If that's not set, it will return an empty string, which makes the tests default to typst.DockerDefaultImage.
+func typstDockerImage() string {
+	return os.Getenv("TYPST_DOCKER_IMAGE")
+}
+
 func TestDocker_VersionString(t *testing.T) {
-	caller := typst.Docker{}
+	caller := typst.Docker{
+		Image: typstDockerImage(),
+	}
 
 	_, err := caller.VersionString()
 	if err != nil {
@@ -25,7 +34,9 @@ func TestDocker_VersionString(t *testing.T) {
 }
 
 func TestDocker_Fonts(t *testing.T) {
-	caller := typst.Docker{}
+	caller := typst.Docker{
+		Image: typstDockerImage(),
+	}
 
 	result, err := caller.Fonts(nil)
 	if err != nil {
@@ -37,7 +48,9 @@ func TestDocker_Fonts(t *testing.T) {
 }
 
 func TestDocker_FontsWithOptions(t *testing.T) {
-	caller := typst.Docker{}
+	caller := typst.Docker{
+		Image: typstDockerImage(),
+	}
 
 	result, err := caller.Fonts(&typst.OptionsFonts{IgnoreSystemFonts: true})
 	if err != nil {
@@ -53,7 +66,9 @@ func TestDocker_Compile(t *testing.T) {
 	const inches = 1
 	const ppi = 144
 
-	typstCaller := typst.Docker{}
+	typstCaller := typst.Docker{
+		Image: typstDockerImage(),
+	}
 
 	r := bytes.NewBufferString(`#set page(width: ` + strconv.FormatInt(inches, 10) + `in, height: ` + strconv.FormatInt(inches, 10) + `in, margin: (x: 1mm, y: 1mm))
 = Test
@@ -88,6 +103,7 @@ func TestDocker_Compile(t *testing.T) {
 // Test basic compile functionality with a given working directory.
 func TestDocker_CompileWithWorkingDir(t *testing.T) {
 	typstCaller := typst.Docker{
+		Image:            typstDockerImage(),
 		WorkingDirectory: filepath.Join(".", "test-files"),
 		Volumes:          []string{".:/markup"},
 	}
