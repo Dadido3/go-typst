@@ -38,14 +38,32 @@ type Docker struct {
 // Ensure that Docker implements the Caller interface.
 var _ Caller = Docker{}
 
-// VersionString returns the Typst version as a string.
-func (d Docker) VersionString() (string, error) {
+// args returns docker related arguments.
+func (d Docker) args() []string {
 	image := DockerDefaultImage
 	if d.Image != "" {
 		image = d.Image
 	}
 
-	cmd := exec.Command("docker", "run", "-i", image, "--version")
+	// Argument -i is needed for stdio to work.
+	args := []string{"run", "-i"}
+
+	// Add mounts.
+	for _, volume := range d.Volumes {
+		args = append(args, "-v", volume)
+	}
+
+	// Which docker image to use.
+	args = append(args, image)
+
+	return args
+}
+
+// VersionString returns the Typst version as a string.
+func (d Docker) VersionString() (string, error) {
+	args := append(d.args(), "--version")
+
+	cmd := exec.Command("docker", args...)
 
 	var output, errBuffer bytes.Buffer
 	cmd.Stdout = &output
@@ -66,15 +84,12 @@ func (d Docker) VersionString() (string, error) {
 // Fonts returns all fonts that are available to Typst.
 // The options parameter is optional, and can be nil.
 func (d Docker) Fonts(options *OptionsFonts) ([]string, error) {
-	image := DockerDefaultImage
-	if d.Image != "" {
-		image = d.Image
-	}
+	args := d.args()
 
-	args := []string{"run", "-i", image, "fonts"}
-	if options != nil {
-		args = append(args, options.Args()...)
+	if options == nil {
+		options = new(OptionsFonts)
 	}
+	args = append(args, options.Args()...)
 
 	cmd := exec.Command("docker", args...)
 
@@ -103,28 +118,14 @@ func (d Docker) Fonts(options *OptionsFonts) ([]string, error) {
 // Compile takes a Typst document from input, and renders it into the output writer.
 // The options parameter is optional, and can be nil.
 func (d Docker) Compile(input io.Reader, output io.Writer, options *OptionsCompile) error {
-	image := DockerDefaultImage
-	if d.Image != "" {
-		image = d.Image
-	}
-
-	// Argument -i is needed for stdio to work.
-	args := []string{"run", "-i"}
-
-	// Add mounts.
-	for _, volume := range d.Volumes {
-		args = append(args, "-v", volume)
-	}
-
-	args = append(args, image)
+	args := d.args()
 
 	// From here on come Typst arguments.
 
-	args = append(args, "c")
-	if options != nil {
-		args = append(args, options.Args()...)
+	if options == nil {
+		options = new(OptionsCompile)
 	}
-	args = append(args, "--diagnostic-format", "human", "-", "-") // TODO: Move these default arguments into Options
+	args = append(args, options.Args()...)
 
 	cmd := exec.Command("docker", args...)
 	cmd.Dir = d.WorkingDirectory

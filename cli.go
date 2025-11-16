@@ -64,12 +64,11 @@ func (c CLI) Fonts(options *OptionsFonts) ([]string, error) {
 		return nil, fmt.Errorf("not supported on this platform")
 	}
 
-	args := []string{"fonts"}
-	if options != nil {
-		args = append(args, options.Args()...)
+	if options == nil {
+		options = new(OptionsFonts)
 	}
 
-	cmd := exec.Command(execPath, args...)
+	cmd := exec.Command(execPath, options.Args()...)
 	cmd.Dir = c.WorkingDirectory
 
 	var output, errBuffer bytes.Buffer
@@ -97,12 +96,6 @@ func (c CLI) Fonts(options *OptionsFonts) ([]string, error) {
 // Compile takes a Typst document from input, and renders it into the output writer.
 // The options parameter is optional, and can be nil.
 func (c CLI) Compile(input io.Reader, output io.Writer, options *OptionsCompile) error {
-	args := []string{"c"}
-	if options != nil {
-		args = append(args, options.Args()...)
-	}
-	args = append(args, "--diagnostic-format", "human", "-", "-") // TODO: Move these default arguments into OptionsCompile
-
 	// Get path of executable.
 	execPath := ExecutablePath
 	if c.ExecutablePath != "" {
@@ -112,7 +105,11 @@ func (c CLI) Compile(input io.Reader, output io.Writer, options *OptionsCompile)
 		return fmt.Errorf("not supported on this platform")
 	}
 
-	cmd := exec.Command(execPath, args...)
+	if options == nil {
+		options = new(OptionsCompile)
+	}
+
+	cmd := exec.Command(execPath, options.Args()...)
 	cmd.Dir = c.WorkingDirectory
 	cmd.Stdin = input
 	cmd.Stdout = output

@@ -57,6 +57,9 @@ type OptionsFonts struct {
 
 // Args returns a list of CLI arguments that should be passed to the executable.
 func (o *OptionsFonts) Args() (result []string) {
+	// The first argument is the command we want to run.
+	result = []string{"fonts"}
+
 	if len(o.FontPaths) > 0 {
 		var paths string
 		for i, path := range o.FontPaths {
@@ -118,6 +121,9 @@ type OptionsCompile struct {
 
 // Args returns a list of CLI arguments that should be passed to the executable.
 func (o *OptionsCompile) Args() (result []string) {
+	// The first argument is the command we want to run.
+	result = []string{"c"}
+
 	if o.Root != "" {
 		result = append(result, "--root", o.Root)
 	}
@@ -194,7 +200,15 @@ func (o *OptionsCompile) Args() (result []string) {
 		result = append(result, "--pdf-standard", standards)
 	}
 
+	// Use human diagnostic format, as that's the format that we support right now.
+	// TODO: Switch to a different diagnostic format in the future
+	result = append(result, "--diagnostic-format", "human")
+
 	result = append(result, o.Custom...)
+
+	// Use stdio for input and output.
+	// TODO: Add Args parameters for when we want to use files instead
+	result = append(result, "-", "-")
 
 	return
 }
