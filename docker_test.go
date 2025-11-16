@@ -63,6 +63,21 @@ func TestDocker_FontsWithOptions(t *testing.T) {
 	}
 }
 
+func TestDocker_FontsWithFontPaths(t *testing.T) {
+	caller := typst.Docker{
+		Image:   typstDockerImage(),
+		Volumes: []string{"./test-files:/fonts"},
+	}
+
+	result, err := caller.Fonts(&typst.OptionsFonts{IgnoreSystemFonts: true, FontPaths: []string{"/fonts"}})
+	if err != nil {
+		t.Fatalf("Failed to get available fonts: %v.", err)
+	}
+	if len(result) != 5 {
+		t.Errorf("Unexpected number of detected fonts. Got %d, want %d.", len(result), 5)
+	}
+}
+
 // Test basic compile functionality.
 func TestDocker_Compile(t *testing.T) {
 	const inches = 1
