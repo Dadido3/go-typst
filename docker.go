@@ -95,8 +95,8 @@ func (d Docker) Fonts() ([]string, error) {
 }
 
 // Compile takes a Typst document from input, and renders it into the output writer.
-// The options parameter is optional.
-func (d Docker) Compile(input io.Reader, output io.Writer, options *Options) error {
+// The options parameter is optional, and can be nil.
+func (d Docker) Compile(input io.Reader, output io.Writer, options *OptionsCompile) error {
 	image := DockerDefaultImage
 	if d.Image != "" {
 		image = d.Image

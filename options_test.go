@@ -13,7 +13,7 @@ import (
 )
 
 func TestOptions(t *testing.T) {
-	o := typst.Options{
+	o := typst.OptionsCompile{
 		FontPaths: []string{"somepath/to/somewhere", "another/to/somewhere"},
 	}
 	args := o.Args()

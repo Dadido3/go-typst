@@ -48,7 +48,7 @@ func TestDocker_Compile(t *testing.T) {
 
 #lorem(5)`)
 
-	opts := typst.Options{
+	opts := typst.OptionsCompile{
 		Format: typst.OutputFormatPNG,
 		PPI:    ppi,
 	}
@@ -84,7 +84,7 @@ func TestDocker_CompileWithWorkingDir(t *testing.T) {
 #show: doc => template()`)
 
 	var w bytes.Buffer
-	err := typstCaller.Compile(r, &w, &typst.Options{Root: "/markup"})
+	err := typstCaller.Compile(r, &w, &typst.OptionsCompile{Root: "/markup"})
 	if err != nil {
 		t.Fatalf("Failed to compile document: %v.", err)
 	}

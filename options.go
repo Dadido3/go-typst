@@ -45,8 +45,8 @@ const (
 	PDFStandardUA_1 PDFStandard = "ua-1" // PDF/UA-1 (Available since Typst 0.14.0)
 )
 
-// Options contains all parameters that can be passed to a Typst CLI.
-type Options struct {
+// OptionsCompile contains all parameters for the compile command.
+type OptionsCompile struct {
 	Root                string            // Configures the project root (for absolute paths).
 	Input               map[string]string // String key-value pairs visible through `sys.inputs`.
 	FontPaths           []string          // Adds additional directories that are recursively searched for fonts.
@@ -77,7 +77,7 @@ type Options struct {
 }
 
 // Args returns a list of CLI arguments that should be passed to the executable.
-func (c *Options) Args() (result []string) {
+func (c *OptionsCompile) Args() (result []string) {
 	if c.Root != "" {
 		result = append(result, "--root", c.Root)
 	}

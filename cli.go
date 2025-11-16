@@ -89,13 +89,13 @@ func (c CLI) Fonts() ([]string, error) {
 }
 
 // Compile takes a Typst document from input, and renders it into the output writer.
-// The options parameter is optional.
-func (c CLI) Compile(input io.Reader, output io.Writer, options *Options) error {
+// The options parameter is optional, and can be nil.
+func (c CLI) Compile(input io.Reader, output io.Writer, options *OptionsCompile) error {
 	args := []string{"c"}
 	if options != nil {
 		args = append(args, options.Args()...)
 	}
-	args = append(args, "--diagnostic-format", "human", "-", "-") // TODO: Move these default arguments into Options
+	args = append(args, "--diagnostic-format", "human", "-", "-") // TODO: Move these default arguments into OptionsCompile
 
 	// Get path of executable.
 	execPath := ExecutablePath
@@ -127,12 +127,12 @@ func (c CLI) Compile(input io.Reader, output io.Writer, options *Options) error 
 }
 
 // CompileWithVariables takes a Typst document from input, and renders it into the output writer.
-// The options parameter is optional.
+// The options parameter is optional, and can be nil.
 //
 // Additionally this will inject the given map of variables into the global scope of the Typst document.
 //
 // Deprecated: You should use typst.InjectValues in combination with the normal Compile method instead.
-func (c CLI) CompileWithVariables(input io.Reader, output io.Writer, options *Options, variables map[string]any) error {
+func (c CLI) CompileWithVariables(input io.Reader, output io.Writer, options *OptionsCompile, variables map[string]any) error {
 	varBuffer := bytes.Buffer{}
 
 	if err := InjectValues(&varBuffer, variables); err != nil {

@@ -7,5 +7,5 @@ package typst
 
 // CLIOptions contains all parameters that can be passed to a Typst CLI.
 //
-// Deprecated: Use typst.Options instead.
-type CLIOptions = Options
+// Deprecated: Use typst.OptionsCompile instead.
+type CLIOptions = OptionsCompile

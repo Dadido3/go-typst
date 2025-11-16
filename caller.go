@@ -21,5 +21,5 @@ type Caller interface {
 
 	// Compile takes a Typst document from the supplied input reader, and renders it into the output writer.
 	// The options parameter is optional, and can be nil.
-	Compile(input io.Reader, output io.Writer, options *Options) error
+	Compile(input io.Reader, output io.Writer, options *OptionsCompile) error
 }
