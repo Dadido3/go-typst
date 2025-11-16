@@ -1,6 +1,6 @@
 # go-typst [![test](https://github.com/Dadido3/go-typst/actions/workflows/test.yml/badge.svg)](https://github.com/Dadido3/go-typst/actions/workflows/test.yml)
 
-`go-typst` is a Go library that leverages the command-line interface of [Typst] to provide functions for the creation of documents and reports in various formats (PDF, SVG, PNG).
+`go-typst` is a Go library that leverages the command-line interface of [Typst] to provide functions for the creation of documents and reports in various formats (PDF, SVG, PNG, HTML).
 Its goal is to provide Go developers with a seamless, "Go-like" interface to Typst's powerful document generation capabilities.
 
 ## Stability and Compatibility
@@ -64,11 +64,11 @@ typstCaller := typst.CLI{
 > [!NOTE]
 > Make sure to follow the Typst license requirements when you pack and distribute the Typst executable with your software.
 
-### Docker
+### Official Docker image
 
-To use the official Typst docker image ensure that you have a working Docker installation.
+To use the official Typst Docker image ensure that you have a working Docker installation.
 
-This module will automatically pull and run a Docker container with the latest supported Typst image.
+`go-typst` will automatically pull and run a Docker container with the latest supported Typst image.
 The basic usage pattern is similar to the CLI variant:
 
 ```go
@@ -132,7 +132,7 @@ err := typstCaller.Compile(input, output, &typst.OptionsCompile{FontPaths: []str
 
 ### Simple document
 
-Here we will create a simple PDF document by passing a reader with Typst markup into `typstCaller.Compile` and then let it write the resulting PDF data into a file:
+Here we will create a simple document by passing a reader with Typst markup into `typstCaller.Compile` and then let it write the resulting SVG data into a file:
 
 ```go
 func main() {
@@ -216,11 +216,8 @@ Output:
 
 ### More examples
 
-It's possible to write custom Typst templates that can be called.
-Th
-A tutorial for the Typst side can be found in the [Typst documentation: Making a Template](https://typst.app/docs/tutorial/making-a-template/).
-
-An example on how to invoke Typst templates can be found in the [passing-values example package](examples/passing-values).
+It's also possible to write Typst templates that can be invoked from `go-typst`.
+A full setup can be found in the [passing-values example package](examples/passing-values).
 
 [the instructions in the Typst repository]: https://github.com/typst/typst?tab=readme-ov-file#installation
 [Typst]: https://typst.app/
