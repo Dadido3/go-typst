@@ -84,7 +84,7 @@ func TestREADME6(t *testing.T) {
 }
 
 func TestREADME7(t *testing.T) {
-	r := bytes.NewBufferString(`#set page(width: 100mm, height: auto, margin: 5mm)
+	markup := bytes.NewBufferString(`#set page(width: 100mm, height: auto, margin: 5mm)
 = go-typst
 
 A library to generate documents and reports by utilizing the command line version of Typst.
@@ -105,27 +105,35 @@ A library to generate documents and reports by utilizing the command line versio
 	}
 	defer f.Close()
 
-	if err := typstCaller.Compile(r, f, &typst.OptionsCompile{Format: typst.OutputFormatSVG}); err != nil {
+	if err := typstCaller.Compile(markup, f, &typst.OptionsCompile{Format: typst.OutputFormatSVG}); err != nil {
 		t.Fatalf("Failed to compile document: %v.", err)
 	}
 }
 
 func TestREADME8(t *testing.T) {
-	var markup bytes.Buffer
-
 	customValues := map[string]any{
 		"time":       time.Now(),
 		"customText": "Hey there!",
+		"struct": struct {
+			Foo int
+			Bar []string
+		}{
+			Foo: 123,
+			Bar: []string{"this", "is", "a", "string", "slice"},
+		},
 	}
 
 	// Inject Go values as Typst markup.
+	var markup bytes.Buffer
 	if err := typst.InjectValues(&markup, customValues); err != nil {
 		t.Fatalf("Failed to inject values into Typst markup: %v.", err)
 	}
 
-	// Some Typst markup using the previously injected values.
+	// Add some Typst markup using the previously injected values.
 	markup.WriteString(`#set page(width: 100mm, height: auto, margin: 5mm)
-#customText | Some date and time: #time.display()`)
+#customText Today's date is #time.display("[year]-[month]-[day]") and the time is #time.display("[hour]:[minute]:[second]").
+
+#struct`)
 
 	f, err := os.Create(filepath.Join(".", "documentation", "images", "readme-example-injection.svg"))
 	if err != nil {

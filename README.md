@@ -22,8 +22,8 @@ Use at your own discretion for production systems.
 
 - PDF, SVG, PNG and HTML generation.
 - All Typst parameters are discoverable and documented in [options.go](options.go).
-- Go-to-Typst Value Encoder: Seamlessly inject any Go values.
-- Encode and inject images as a Typst markup simply by [wrapping](image.go) `image.Image` types or byte slices with raw JPEG or PNG data.
+- Go-to-Typst Value Encoder: Seamlessly encode any Go values as Typst markup.
+- Encode and inject images as a Typst markup simply by [wrapping](image.go) `image.Image` types or raw image data.
 - Errors from Typst CLI are returned as structured Go error objects with detailed information, such as line numbers and file paths.
 - Uses stdio; No temporary files will be created.
 - Supports native Typst installations and the official Docker image.
@@ -128,7 +128,7 @@ err := typstCaller.Compile(input, output, &typst.OptionsCompile{FontPaths: []str
 
 `typst.CLI` and `typst.Docker` both implement the `typst.Caller` interface.
 
-## More examples
+## Examples
 
 ### Simple document
 
@@ -136,7 +136,7 @@ Here we will create a simple PDF document by passing a reader with Typst markup 
 
 ```go
 func main() {
-    r := bytes.NewBufferString(`#set page(width: 100mm, height: auto, margin: 5mm)
+    markup := bytes.NewBufferString(`#set page(width: 100mm, height: auto, margin: 5mm)
 = go-typst
 
 A library to generate documents and reports by utilizing the command line version of Typst.
@@ -157,7 +157,7 @@ A library to generate documents and reports by utilizing the command line versio
     }
     defer f.Close()
 
-    if err := typstCaller.Compile(r, f, &typst.OptionsCompile{Format: typst.OutputFormatSVG}); err != nil {
+    if err := typstCaller.Compile(markup, f, &typst.OptionsCompile{Format: typst.OutputFormatSVG}); err != nil {
         t.Fatalf("Failed to compile document: %v.", err)
     }
 }
@@ -173,21 +173,29 @@ If you need to create documents that rely on data coming from your Go applicatio
 
 ```go
 func main() {
-    var markup bytes.Buffer
-
     customValues := map[string]any{
         "time":       time.Now(),
         "customText": "Hey there!",
+        "struct": struct {
+            Foo int
+            Bar []string
+        }{
+            Foo: 123,
+            Bar: []string{"this", "is", "a", "string", "slice"},
+        },
     }
 
     // Inject Go values as Typst markup.
+    var markup bytes.Buffer
     if err := typst.InjectValues(&markup, customValues); err != nil {
         t.Fatalf("Failed to inject values into Typst markup: %v.", err)
     }
 
-    // Some Typst markup using the previously injected values.
+    // Add some Typst markup using the previously injected values.
     markup.WriteString(`#set page(width: 100mm, height: auto, margin: 5mm)
-#customText | Some date and time: #time.display()`)
+#customText Today's date is #time.display("[year]-[month]-[day]") and the time is #time.display("[hour]:[minute]:[second]").
+
+#struct`)
 
     f, err := os.Create(filepath.Join(".", "documentation", "images", "readme-example-injection.svg"))
     if err != nil {
@@ -206,9 +214,10 @@ Output:
 
 ![readme-example-injection.svg](documentation/images/readme-example-injection.svg)
 
-### Templates
+### More examples
 
-You can also write your own templates and call them with custom data.
+It's possible to write custom Typst templates that can be called.
+Th
 A tutorial for the Typst side can be found in the [Typst documentation: Making a Template](https://typst.app/docs/tutorial/making-a-template/).
 
 An example on how to invoke Typst templates can be found in the [passing-values example package](examples/passing-values).
