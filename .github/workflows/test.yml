@@ -28,7 +28,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Test package
-        run: go test -run ^(?!Docker).*$ -v ./...
+        run: go test -skip "^TestDocker.*$" -v ./...
 
   test-docker:
     name: test docker
@@ -41,6 +41,7 @@ jobs:
           - 'ghcr.io/typst/typst:v0.13.0'
           - 'ghcr.io/typst/typst:v0.13.1'
           - 'ghcr.io/typst/typst:0.14.0'
+          - '' # Also include the default image, just in case.
 
     steps:
       - name: Set up Go ${{ matrix.go-version }}
@@ -52,6 +53,6 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Test package
-        run: go test -run ^Docker.*$ -v ./...
+        run: go test -run "^TestDocker.*$" -v ./...
         env:
           TYPST_DOCKER_IMAGE: ${{ matrix.typst-docker-image }}
