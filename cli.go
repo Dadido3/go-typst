@@ -132,11 +132,6 @@ func (c CLI) Compile(input io.Reader, output io.Writer, options *OptionsCompile)
 	return nil
 }
 
-// CompileWithVariables takes a Typst document from input, and renders it into the output writer.
-// The options parameter is optional, and can be nil.
-//
-// Additionally this will inject the given map of variables into the global scope of the Typst document.
-//
 // Deprecated: You should use typst.InjectValues in combination with the normal Compile method instead.
 func (c CLI) CompileWithVariables(input io.Reader, output io.Writer, options *OptionsCompile, variables map[string]any) error {
 	varBuffer := bytes.Buffer{}
