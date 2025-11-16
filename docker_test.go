@@ -1,4 +1,4 @@
-// Copyright (c) 2024-2025 David Vogel
+// Copyright (c) 2025 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -8,7 +8,6 @@ package typst_test
 import (
 	"bytes"
 	"image"
-	_ "image/png"
 	"path/filepath"
 	"strconv"
 	"testing"
@@ -16,17 +15,17 @@ import (
 	"github.com/Dadido3/go-typst"
 )
 
-func TestCLI_VersionString(t *testing.T) {
-	cli := typst.CLI{}
+func TestDocker_VersionString(t *testing.T) {
+	caller := typst.Docker{}
 
-	_, err := cli.VersionString()
+	_, err := caller.VersionString()
 	if err != nil {
 		t.Fatalf("Failed to get typst version: %v.", err)
 	}
 }
 
-func TestCLI_Fonts(t *testing.T) {
-	caller := typst.CLI{}
+func TestDocker_Fonts(t *testing.T) {
+	caller := typst.Docker{}
 
 	result, err := caller.Fonts()
 	if err != nil {
@@ -38,11 +37,11 @@ func TestCLI_Fonts(t *testing.T) {
 }
 
 // Test basic compile functionality.
-func TestCLI_Compile(t *testing.T) {
+func TestDocker_Compile(t *testing.T) {
 	const inches = 1
 	const ppi = 144
 
-	cli := typst.CLI{}
+	typstCaller := typst.Docker{}
 
 	r := bytes.NewBufferString(`#set page(width: ` + strconv.FormatInt(inches, 10) + `in, height: ` + strconv.FormatInt(inches, 10) + `in, margin: (x: 1mm, y: 1mm))
 = Test
@@ -55,7 +54,7 @@ func TestCLI_Compile(t *testing.T) {
 	}
 
 	var w bytes.Buffer
-	if err := cli.Compile(r, &w, &opts); err != nil {
+	if err := typstCaller.Compile(r, &w, &opts); err != nil {
 		t.Fatalf("Failed to compile document: %v.", err)
 	}
 
@@ -75,16 +74,17 @@ func TestCLI_Compile(t *testing.T) {
 }
 
 // Test basic compile functionality with a given working directory.
-func TestCLI_CompileWithWorkingDir(t *testing.T) {
-	cli := typst.CLI{
+func TestDocker_CompileWithWorkingDir(t *testing.T) {
+	typstCaller := typst.Docker{
 		WorkingDirectory: filepath.Join(".", "test-files"),
+		Volumes:          []string{".:/markup"},
 	}
 
 	r := bytes.NewBufferString(`#import "hello-world-template.typ": template
 #show: doc => template()`)
 
 	var w bytes.Buffer
-	err := cli.Compile(r, &w, nil)
+	err := typstCaller.Compile(r, &w, &typst.Options{Root: "/markup"})
 	if err != nil {
 		t.Fatalf("Failed to compile document: %v.", err)
 	}

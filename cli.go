@@ -6,12 +6,14 @@
 package typst
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"io"
 	"os/exec"
 )
 
+// CLI allows you to invoke commands on a native Typst executable.
 type CLI struct {
 	ExecutablePath   string // The Typst executable path can be overridden here. Otherwise the default path will be used.
 	WorkingDirectory string // The path where the Typst executable is run in. When left empty, the Typst executable will be run in the process's current directory.
@@ -50,6 +52,42 @@ func (c CLI) VersionString() (string, error) {
 	return output.String(), nil
 }
 
+// Fonts returns all fonts that are available to Typst.
+func (c CLI) Fonts() ([]string, error) {
+	// Get path of executable.
+	execPath := ExecutablePath
+	if c.ExecutablePath != "" {
+		execPath = c.ExecutablePath
+	}
+	if execPath == "" {
+		return nil, fmt.Errorf("not supported on this platform")
+	}
+
+	cmd := exec.Command(execPath, "fonts")
+	cmd.Dir = c.WorkingDirectory
+
+	var output, errBuffer bytes.Buffer
+	cmd.Stdout = &output
+	cmd.Stderr = &errBuffer
+
+	if err := cmd.Run(); err != nil {
+		switch err := err.(type) {
+		case *exec.ExitError:
+			return nil, ParseStderr(errBuffer.String(), err)
+		default:
+			return nil, err
+		}
+	}
+
+	var result []string
+	scanner := bufio.NewScanner(&output)
+	for scanner.Scan() {
+		result = append(result, scanner.Text())
+	}
+
+	return result, nil
+}
+
 // Compile takes a Typst document from input, and renders it into the output writer.
 // The options parameter is optional.
 func (c CLI) Compile(input io.Reader, output io.Writer, options *Options) error {
@@ -57,7 +95,7 @@ func (c CLI) Compile(input io.Reader, output io.Writer, options *Options) error 
 	if options != nil {
 		args = append(args, options.Args()...)
 	}
-	args = append(args, "--diagnostic-format", "human", "-", "-")
+	args = append(args, "--diagnostic-format", "human", "-", "-") // TODO: Move these default arguments into Options
 
 	// Get path of executable.
 	execPath := ExecutablePath

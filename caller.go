@@ -1,17 +1,23 @@
+// Copyright (c) 2025 David Vogel
+//
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
+
 package typst
 
 import "io"
 
-// TODO: Add an interface for the Typst caller and let CLI (and later docker and WASM) be implementations of that
+// TODO: Add WASM caller
 
-// TODO: Add docker support to CLI, by calling docker run instead
+// TODO: Add special type "Filename" (or similar) that implements a io.Reader/io.Writer that can be plugged into the input and output parameters of the Compile method to signal the use of input/output files instead of readers/writers
 
-// TODO: Add special type "Filename" (or similar) that implements a io.Reader/io.Writer that can be plugged into the input and output parameters of the Compile method
-
-// Caller contains all functions that can be
+// Caller contains all Typst commands that are supported by this library.
 type Caller interface {
 	// VersionString returns the version string as returned by Typst.
 	VersionString() (string, error)
+
+	// Fonts returns all fonts that are available to Typst.
+	Fonts() ([]string, error)
 
 	// Compile takes a Typst document from the supplied input reader, and renders it into the output writer.
 	// The options parameter is optional, and can be nil.
