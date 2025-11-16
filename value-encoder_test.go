@@ -195,10 +195,10 @@ func TestValueEncoder(t *testing.T) {
 
 			// Compile to test parsing.
 			if !tt.wantErr {
-				typstCLI := typst.CLI{}
+				typstCaller := typst.CLI{}
 				input := strings.NewReader("#" + result.String())
 				var output bytes.Buffer
-				if err := typstCLI.Compile(input, &output, nil); err != nil {
+				if err := typstCaller.Compile(input, &output, nil); err != nil {
 					t.Errorf("Failed to compile generated Typst markup: %v", err)
 				}
 			}

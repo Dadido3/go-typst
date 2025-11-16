@@ -46,8 +46,8 @@ func main() {
 	}
 	defer f.Close()
 
-	typstCLI := typst.CLI{}
-	if err := typstCLI.Compile(&markup, f, nil); err != nil {
+	typstCaller := typst.CLI{}
+	if err := typstCaller.Compile(&markup, f, nil); err != nil {
 		log.Panicf("Failed to compile document: %v.", err)
 	}
 }

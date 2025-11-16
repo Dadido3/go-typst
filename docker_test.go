@@ -1,4 +1,4 @@
-// Copyright (c) 2024-2025 David Vogel
+// Copyright (c) 2025 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -8,7 +8,7 @@ package typst_test
 import (
 	"bytes"
 	"image"
-	_ "image/png"
+	"os"
 	"path/filepath"
 	"strconv"
 	"testing"
@@ -16,10 +16,18 @@ import (
 	"github.com/Dadido3/go-typst"
 )
 
-func TestCLI_VersionString(t *testing.T) {
-	cli := typst.CLI{}
+// Returns the TYPST_DOCKER_IMAGE environment variable.
+// If that's not set, it will return an empty string, which makes the tests default to typst.DockerDefaultImage.
+func typstDockerImage() string {
+	return os.Getenv("TYPST_DOCKER_IMAGE")
+}
 
-	v, err := cli.VersionString()
+func TestDocker_VersionString(t *testing.T) {
+	typstCaller := typst.Docker{
+		Image: typstDockerImage(),
+	}
+
+	v, err := typstCaller.VersionString()
 	if err != nil {
 		t.Fatalf("Failed to get typst version: %v.", err)
 	}
@@ -27,8 +35,10 @@ func TestCLI_VersionString(t *testing.T) {
 	t.Logf("VersionString: %s", v)
 }
 
-func TestCLI_Fonts(t *testing.T) {
-	typstCaller := typst.CLI{}
+func TestDocker_Fonts(t *testing.T) {
+	typstCaller := typst.Docker{
+		Image: typstDockerImage(),
+	}
 
 	result, err := typstCaller.Fonts(nil)
 	if err != nil {
@@ -39,8 +49,10 @@ func TestCLI_Fonts(t *testing.T) {
 	}
 }
 
-func TestCLI_FontsWithOptions(t *testing.T) {
-	typstCaller := typst.CLI{}
+func TestDocker_FontsWithOptions(t *testing.T) {
+	typstCaller := typst.Docker{
+		Image: typstDockerImage(),
+	}
 
 	result, err := typstCaller.Fonts(&typst.OptionsFonts{IgnoreSystemFonts: true})
 	if err != nil {
@@ -51,10 +63,13 @@ func TestCLI_FontsWithOptions(t *testing.T) {
 	}
 }
 
-func TestCLI_FontsWithFontPaths(t *testing.T) {
-	typstCaller := typst.CLI{}
+func TestDocker_FontsWithFontPaths(t *testing.T) {
+	typstCaller := typst.Docker{
+		Image:   typstDockerImage(),
+		Volumes: []string{"./test-files:/fonts"},
+	}
 
-	result, err := typstCaller.Fonts(&typst.OptionsFonts{IgnoreSystemFonts: true, FontPaths: []string{filepath.Join(".", "test-files")}})
+	result, err := typstCaller.Fonts(&typst.OptionsFonts{IgnoreSystemFonts: true, FontPaths: []string{"/fonts"}})
 	if err != nil {
 		t.Fatalf("Failed to get available fonts: %v.", err)
 	}
@@ -64,11 +79,13 @@ func TestCLI_FontsWithFontPaths(t *testing.T) {
 }
 
 // Test basic compile functionality.
-func TestCLI_Compile(t *testing.T) {
+func TestDocker_Compile(t *testing.T) {
 	const inches = 1
 	const ppi = 144
 
-	cli := typst.CLI{}
+	typstCaller := typst.Docker{
+		Image: typstDockerImage(),
+	}
 
 	r := bytes.NewBufferString(`#set page(width: ` + strconv.FormatInt(inches, 10) + `in, height: ` + strconv.FormatInt(inches, 10) + `in, margin: (x: 1mm, y: 1mm))
 = Test
@@ -81,7 +98,7 @@ func TestCLI_Compile(t *testing.T) {
 	}
 
 	var w bytes.Buffer
-	if err := cli.Compile(r, &w, &opts); err != nil {
+	if err := typstCaller.Compile(r, &w, &opts); err != nil {
 		t.Fatalf("Failed to compile document: %v.", err)
 	}
 
@@ -101,16 +118,18 @@ func TestCLI_Compile(t *testing.T) {
 }
 
 // Test basic compile functionality with a given working directory.
-func TestCLI_CompileWithWorkingDir(t *testing.T) {
-	cli := typst.CLI{
+func TestDocker_CompileWithWorkingDir(t *testing.T) {
+	typstCaller := typst.Docker{
+		Image:            typstDockerImage(),
 		WorkingDirectory: filepath.Join(".", "test-files"),
+		Volumes:          []string{".:/markup"},
 	}
 
 	r := bytes.NewBufferString(`#import "hello-world-template.typ": template
 #show: doc => template()`)
 
 	var w bytes.Buffer
-	err := cli.Compile(r, &w, nil)
+	err := typstCaller.Compile(r, &w, &typst.OptionsCompile{Root: "/markup"})
 	if err != nil {
 		t.Fatalf("Failed to compile document: %v.", err)
 	}

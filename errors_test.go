@@ -63,7 +63,7 @@ func TestErrors1(t *testing.T) {
 func TestErrors2(t *testing.T) {
 	cli := typst.CLI{}
 
-	opts := typst.CLIOptions{
+	opts := typst.OptionsCompile{
 		Pages: "a",
 	}
 

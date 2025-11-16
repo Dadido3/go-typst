@@ -6,24 +6,23 @@
 package typst
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"io"
 	"os/exec"
 )
 
-// TODO: Add docker support to CLI, by calling docker run instead
-
-// TODO: Add an interface for the Typst caller and let CLI (and later docker and WASM) be implementations of that
-
+// CLI allows you to invoke commands on a native Typst executable.
 type CLI struct {
 	ExecutablePath   string // The Typst executable path can be overridden here. Otherwise the default path will be used.
 	WorkingDirectory string // The path where the Typst executable is run in. When left empty, the Typst executable will be run in the process's current directory.
 }
 
-// TODO: Add method for querying the Typst version resulting in a semver object
+// Ensure that CLI implements the Caller interface.
+var _ Caller = CLI{}
 
-// VersionString returns the version string as returned by Typst.
+// VersionString returns the Typst version as a string.
 func (c CLI) VersionString() (string, error) {
 	// Get path of executable.
 	execPath := ExecutablePath
@@ -31,7 +30,7 @@ func (c CLI) VersionString() (string, error) {
 		execPath = c.ExecutablePath
 	}
 	if execPath == "" {
-		return "", fmt.Errorf("go-typst doesn't support this platform")
+		return "", fmt.Errorf("not supported on this platform")
 	}
 
 	cmd := exec.Command(execPath, "--version")
@@ -53,25 +52,64 @@ func (c CLI) VersionString() (string, error) {
 	return output.String(), nil
 }
 
-// Compile takes a Typst document from input, and renders it into the output writer.
-// The options parameter is optional.
-func (c CLI) Compile(input io.Reader, output io.Writer, options *CLIOptions) error {
-	args := []string{"c"}
-	if options != nil {
-		args = append(args, options.Args()...)
-	}
-	args = append(args, "--diagnostic-format", "human", "-", "-")
-
+// Fonts returns all fonts that are available to Typst.
+// The options parameter is optional, and can be nil.
+func (c CLI) Fonts(options *OptionsFonts) ([]string, error) {
 	// Get path of executable.
 	execPath := ExecutablePath
 	if c.ExecutablePath != "" {
 		execPath = c.ExecutablePath
 	}
 	if execPath == "" {
-		return fmt.Errorf("go-typst doesn't support this platform")
+		return nil, fmt.Errorf("not supported on this platform")
 	}
 
-	cmd := exec.Command(execPath, args...)
+	if options == nil {
+		options = new(OptionsFonts)
+	}
+
+	cmd := exec.Command(execPath, options.Args()...)
+	cmd.Dir = c.WorkingDirectory
+
+	var output, errBuffer bytes.Buffer
+	cmd.Stdout = &output
+	cmd.Stderr = &errBuffer
+
+	if err := cmd.Run(); err != nil {
+		switch err := err.(type) {
+		case *exec.ExitError:
+			return nil, ParseStderr(errBuffer.String(), err)
+		default:
+			return nil, err
+		}
+	}
+
+	var result []string
+	scanner := bufio.NewScanner(&output)
+	for scanner.Scan() {
+		result = append(result, scanner.Text())
+	}
+
+	return result, nil
+}
+
+// Compile takes a Typst document from input, and renders it into the output writer.
+// The options parameter is optional, and can be nil.
+func (c CLI) Compile(input io.Reader, output io.Writer, options *OptionsCompile) error {
+	// Get path of executable.
+	execPath := ExecutablePath
+	if c.ExecutablePath != "" {
+		execPath = c.ExecutablePath
+	}
+	if execPath == "" {
+		return fmt.Errorf("not supported on this platform")
+	}
+
+	if options == nil {
+		options = new(OptionsCompile)
+	}
+
+	cmd := exec.Command(execPath, options.Args()...)
 	cmd.Dir = c.WorkingDirectory
 	cmd.Stdin = input
 	cmd.Stdout = output
@@ -91,13 +129,8 @@ func (c CLI) Compile(input io.Reader, output io.Writer, options *CLIOptions) err
 	return nil
 }
 
-// CompileWithVariables takes a Typst document from input, and renders it into the output writer.
-// The options parameter is optional.
-//
-// Additionally this will inject the given map of variables into the global scope of the Typst document.
-//
-// Deprecated: You should use InjectValues in combination with the normal Compile method instead.
-func (c CLI) CompileWithVariables(input io.Reader, output io.Writer, options *CLIOptions, variables map[string]any) error {
+// Deprecated: You should use typst.InjectValues in combination with the normal Compile method instead.
+func (c CLI) CompileWithVariables(input io.Reader, output io.Writer, options *OptionsCompile, variables map[string]any) error {
 	varBuffer := bytes.Buffer{}
 
 	if err := InjectValues(&varBuffer, variables); err != nil {
