@@ -83,7 +83,7 @@ func TestREADME6(t *testing.T) {
 	}
 }
 
-func TestREADME7(t *testing.T) {
+func TestREADME8(t *testing.T) {
 	markup := bytes.NewBufferString(`#set page(width: 100mm, height: auto, margin: 5mm)
 = go-typst
 
@@ -110,7 +110,7 @@ A library to generate documents and reports by utilizing the command line versio
 	}
 }
 
-func TestREADME8(t *testing.T) {
+func TestREADME9(t *testing.T) {
 	customValues := map[string]any{
 		"time":       time.Now(),
 		"customText": "Hey there!",
