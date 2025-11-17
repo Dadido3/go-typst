@@ -17,15 +17,15 @@ import (
 
 func TestDockerExec(t *testing.T) {
 	// Just to ensure that there is no container running.
-	exec.Command("docker", "stop", "-t", "1", "typst-instance").Run()
-	exec.Command("docker", "rm", "typst-instance").Run()
+	exec.Command("docker", "stop", "-t", "1", "typst-instance").Run() //nolint:errcheck
+	exec.Command("docker", "rm", "typst-instance").Run()              //nolint:errcheck
 
 	if err := exec.Command("docker", "run", "--name", "typst-instance", "-v", "./test-files:/test-files", "-id", "123marvin123/typst").Run(); err != nil {
 		t.Fatalf("Failed to run Docker container: %v.", err)
 	}
 	t.Cleanup(func() {
-		exec.Command("docker", "stop", "-t", "1", "typst-instance").Run()
-		exec.Command("docker", "rm", "typst-instance").Run()
+		exec.Command("docker", "stop", "-t", "1", "typst-instance").Run() //nolint:errcheck
+		exec.Command("docker", "rm", "typst-instance").Run()              //nolint:errcheck
 	})
 
 	tests := []struct {
