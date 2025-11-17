@@ -124,9 +124,24 @@ typstCaller := typst.Docker{
 err := typstCaller.Compile(input, output, &typst.OptionsCompile{FontPaths: []string{"/fonts"}})
 ```
 
+### Named Docker containers
+
+If you have an already running Docker container that you want to (re)use, you can use `typst.DockerExec` to invoke the Typst executable inside any running container by its name:
+
+```go
+typstCaller := typst.DockerExec{
+    ContainerName: "typst",
+}
+
+err := typstCaller.Compile(input, output, options)
+```
+
+This method has a lower latency than using `typst.Docker`, as it doesn't need to spin up a Docker container every call.
+But you need to manage the lifetime of the Container yourself, or use a Docker orchestrator.
+
 ## Caller interface
 
-`typst.CLI` and `typst.Docker` both implement the `typst.Caller` interface.
+`typst.CLI`, `typst.Docker` and `typst.DockerExec` implement the `typst.Caller` interface.
 
 ## Examples
 
