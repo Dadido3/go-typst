@@ -27,7 +27,7 @@ const DockerDefaultImage = "ghcr.io/typst/typst:0.14.0"
 // Therefore the container will start and stop automatically.
 // To have more control over the lifetime of a Docker container see typst.DockerExec.
 type Docker struct {
-	Image            string // The image to use, defaults to the latest supported offical Typst Docker image if left empty. See: typst.DockerDefaultImage.
+	Image            string // The image to use, defaults to the latest supported official Typst Docker image if left empty. See: typst.DockerDefaultImage.
 	WorkingDirectory string // The working directory of Docker. When left empty, Docker will be run with the process's current working directory.
 
 	// Additional bind-mounts or volumes that are passed via "--volume" flag to Docker.
