@@ -19,7 +19,7 @@ import (
 
 // The default Docker image to use.
 // This is the latest supported version of Typst.
-const DockerDefaultImage = "ghcr.io/typst/typst:0.14.0"
+const DockerDefaultImage = "ghcr.io/typst/typst:0.14.1"
 
 // Docker allows you to invoke commands on a Typst Docker image.
 //
