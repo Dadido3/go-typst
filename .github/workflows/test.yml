@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         go-version: ['1.23.x']
-        typst-version: ['0.12.0', '0.13.0', '0.13.1', '0.14.0', '0.14.1', '0.14.2']
+        typst-version: ['0.12.0', '0.13.0', '0.13.1', '0.14.0', '0.14.1', '0.14.2', '0.15.0', '0.15.1']
 
     steps:
       - name: Install typst-cli ${{ matrix.typst-version }} from crates.io
@@ -36,13 +36,15 @@ jobs:
     strategy:
       matrix:
         go-version: ['1.23.x']
-        typst-docker-image: 
+        typst-docker-image:
           - 'ghcr.io/typst/typst:v0.12.0'
           - 'ghcr.io/typst/typst:v0.13.0'
           - 'ghcr.io/typst/typst:v0.13.1'
           - 'ghcr.io/typst/typst:0.14.0'
           - 'ghcr.io/typst/typst:0.14.1'
           - 'ghcr.io/typst/typst:0.14.2'
+          - 'ghcr.io/typst/typst:0.15.0'
+          - 'ghcr.io/typst/typst:0.15.1'
           - '' # Also include the default image, just in case.
 
     steps:
