@@ -1,4 +1,4 @@
-// Copyright (c) 2024-2025 David Vogel
+// Copyright (c) 2024-2026 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -35,7 +35,8 @@ func (i Image) MarshalTypstValue() ([]byte, error) {
 	var buf bytes.Buffer
 	buf.WriteString("image(bytes((")
 	for _, b := range buffer.Bytes() {
-		buf.WriteString(strconv.FormatUint(uint64(b), 10) + ",")
+		buf.WriteString(strconv.FormatUint(uint64(b), 10))
+		buf.WriteString(",")
 	}
 	buf.WriteString(")))")
 
@@ -55,7 +56,8 @@ func (i ImageRaw) MarshalTypstValue() ([]byte, error) {
 	var buf bytes.Buffer
 	buf.WriteString("image(bytes((")
 	for _, b := range i {
-		buf.WriteString(strconv.FormatUint(uint64(b), 10) + ",")
+		buf.WriteString(strconv.FormatUint(uint64(b), 10))
+		buf.WriteString(",")
 	}
 	buf.WriteString(")))")
 
