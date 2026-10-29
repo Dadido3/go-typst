@@ -33,7 +33,7 @@ func (i Image) MarshalTypstValue() ([]byte, error) {
 	// TODO: Consider using raw pixel encoding instead of PNG
 
 	var buf bytes.Buffer
-	buf.WriteString("image.decode(bytes((") // TODO: Pass bytes directly to image once Typst 0.12.0 is not supported anymore
+	buf.WriteString("image(bytes((")
 	for _, b := range buffer.Bytes() {
 		buf.WriteString(strconv.FormatUint(uint64(b), 10) + ",")
 	}
@@ -53,7 +53,7 @@ type ImageRaw []byte
 
 func (i ImageRaw) MarshalTypstValue() ([]byte, error) {
 	var buf bytes.Buffer
-	buf.WriteString("image.decode(bytes((") // TODO: Pass bytes directly to image once Typst 0.12.0 is not supported anymore
+	buf.WriteString("image(bytes((")
 	for _, b := range i {
 		buf.WriteString(strconv.FormatUint(uint64(b), 10) + ",")
 	}
