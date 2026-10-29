@@ -173,6 +173,7 @@ A library to generate documents and reports by utilizing the command line versio
     if err != nil {
         t.Fatalf("Failed to create output file: %v.", err)
     }
+    // For simplicity's sake, the error returned by f.Close() is not checked here.
     defer f.Close()
 
     if err := typstCaller.Compile(markup, f, &typst.OptionsCompile{Format: typst.OutputFormatSVG}); err != nil {
@@ -219,6 +220,7 @@ func main() {
     if err != nil {
         t.Fatalf("Failed to create output file: %v.", err)
     }
+    // For simplicity's sake, the error returned by f.Close() is not checked here.
     defer f.Close()
 
     typstCaller := typst.CLI{}

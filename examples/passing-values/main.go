@@ -44,7 +44,8 @@ func main() {
 	if err != nil {
 		log.Panicf("Failed to create output file: %v.", err)
 	}
-	defer f.Close()
+	// For simplicity's sake, the error returned by f.Close() is not checked here.
+	defer f.Close() //nolint:errcheck
 
 	typstCaller := typst.CLI{}
 	if err := typstCaller.Compile(&markup, f, nil); err != nil {

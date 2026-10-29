@@ -1,8 +1,11 @@
 {
     "cSpell.words": [
         "Dadido",
+        "Dockerized",
+        "Fatalf",
         "Foogaloo",
         "golangci",
+        "nolint",
         "somepath",
         "typst",
         "Vogel"

@@ -1,4 +1,4 @@
-// Copyright (c) 2025 David Vogel
+// Copyright (c) 2025-2026 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -103,7 +103,8 @@ A library to generate documents and reports by utilizing the command line versio
 	if err != nil {
 		t.Fatalf("Failed to create output file: %v.", err)
 	}
-	defer f.Close()
+	// For simplicity's sake, the error returned by f.Close() is not checked.
+	defer f.Close() //nolint:errcheck
 
 	if err := typstCaller.Compile(markup, f, &typst.OptionsCompile{Format: typst.OutputFormatSVG}); err != nil {
 		t.Fatalf("Failed to compile document: %v.", err)
@@ -139,7 +140,8 @@ func TestREADME9(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create output file: %v.", err)
 	}
-	defer f.Close()
+	// For simplicity's sake, the error returned by f.Close() is not checked.
+	defer f.Close() //nolint:errcheck
 
 	typstCaller := typst.CLI{}
 	if err := typstCaller.Compile(&markup, f, &typst.OptionsCompile{Format: typst.OutputFormatSVG}); err != nil {
