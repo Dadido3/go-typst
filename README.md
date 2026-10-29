@@ -10,12 +10,13 @@ Supported Typst versions are tested by unit tests to ensure compatibility.
 
 **Supported Versions:**
 
-- Typst 0.12.0
 - Typst 0.13.0
 - Typst 0.13.1
 - Typst 0.14.0
 - Typst 0.14.1
 - Typst 0.14.2
+- Typst 0.15.0
+- Typst 0.15.1
 
 While breaking changes may occur, i aim to minimize disruptions.
 Use at your own discretion for production systems.
